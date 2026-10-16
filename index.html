@@ -44,12 +44,16 @@ canvas{display:block}
 .card small{font:700 14px ui-monospace,monospace;letter-spacing:.18em;opacity:.7}
 .card i{font-style:normal;font-size:64px;opacity:.85}
 /* timeline */
-.tl{position:absolute;left:80px;right:80px;top:330px;height:4px;background:var(--line);border-radius:2px}
+.tl{position:absolute;left:330px;right:90px;top:330px;height:4px;background:var(--line);border-radius:2px}
+.tlh{position:absolute;left:80px;width:210px;font-size:22px;color:var(--dim);line-height:1;transform:translateY(-50%)}
+.tlh b{font:800 64px ui-monospace,monospace;color:#cfd5e2;margin-right:8px}
+.tlh small{display:block;font:600 14px ui-monospace,monospace;margin-top:8px;letter-spacing:.06em}
+.tlh.hot b{color:var(--pink)}
 .tl .prog{position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,var(--amber),var(--pink));width:0;border-radius:2px}
 .ev{position:absolute;top:-9px;width:22px;height:22px;margin-left:-11px;cursor:pointer;transform:scale(0);transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
 .ev.on{transform:scale(1)}
 .ev .dot{width:22px;height:22px;border-radius:50%;border:4px solid var(--bg);box-shadow:0 0 0 2px currentColor;background:currentColor}
-.ev .lab{position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:16px;font-weight:650;color:#cfd5e2;text-align:center}
+.ev .lab{position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:15px;font-weight:650;color:#cfd5e2;text-align:center}
 .ev .lab small{display:block;font:600 12px ui-monospace,monospace;color:var(--dim);margin-top:2px}
 .ev.up .lab{bottom:34px}.ev.dn .lab{top:34px}
 .ev.up2 .lab{bottom:92px}.ev.dn2 .lab{top:92px}
@@ -58,7 +62,7 @@ canvas{display:block}
 .ev.sel .lab{color:#fff}
 .yr{position:absolute;top:-58px;font:800 22px ui-monospace,monospace;color:#3a4152}
 .tlcard{position:absolute;left:80px;right:80px;bottom:60px;height:150px;border:1px solid var(--line);border-radius:18px;background:#0e1119;padding:26px 32px;display:flex;align-items:center;gap:30px}
-.tlcard .d{font:800 34px ui-monospace,monospace;min-width:150px}
+.tlcard .d{font:800 34px ui-monospace,monospace;min-width:210px}
 .tlcard .t{font-size:34px;font-weight:800}.tlcard .x{font-size:21px;color:#aab1c0;margin-top:6px}
 .legend{position:absolute;right:80px;top:70px;font-size:15px;color:var(--dim);z-index:3}
 .legend span{margin-left:18px}.legend span:before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;background:currentColor;margin-right:7px}
@@ -177,11 +181,14 @@ input[type=range]{accent-color:var(--amber);width:300px}
 </section>
 
 <!-- 7 TIMELINE -->
-<section class="slide" data-anim="timeline" data-notes="(1:30) The chronology. Hover any dot. Notice the colors shift from scaling, to reasoning, to agents, to robots.">
+<section class="slide" data-anim="timeline" data-notes="(1:30) The chronology. Top line: six years, 2019 to 2024. Bottom line: just the last 22 months — more milestones than the six years before. Robots that clean homes they've never seen (π0.5), open humanoid brains (GR00T), and in math: an AI proof on the Navier–Stokes Millennium Problem and 722 AI-written papers on open problems. Hover any dot.">
   <div class="kicker">Chronology</div>
   <h2>2019 → 2026</h2>
   <div class="legend"><span style="color:var(--amber)">scaling</span><span style="color:var(--cyan)">reasoning</span><span style="color:var(--green)">agents</span><span style="color:var(--pink)">robots</span></div>
-  <div class="tl"><div class="prog"></div></div>
+  <div class="tlh" style="top:236px"><b>6</b> years<small>2019 – 2024</small></div>
+  <div class="tl" style="top:256px"><div class="prog"></div></div>
+  <div class="tlh hot" style="top:500px"><b>22</b> months<small>2025 → now</small></div>
+  <div class="tl" style="top:520px"><div class="prog"></div></div>
   <div class="tlcard"><div class="d"></div><div><div class="t"></div><div class="x"></div></div></div>
 </section>
 
@@ -619,34 +626,46 @@ A.timeline=(el,sig)=>{
     ['2024','agent','SWE-agents','Agents begin resolving real GitHub issues'],
     ['2024','reason','o1','Test-time compute: think longer, score higher'],
     ['2024','robot','π0','One generalist policy across many robot bodies'],
-    ['2024','reason','RLVR named','Tülu 3: reinforcement learning with verifiable rewards'],
-    ['2025','reason','DeepSeek-R1','Open model: reasoning emerges from verifiable reward alone'],
-    ['2025','robot','Figure Helix','Humanoid: slow VLM "System 2" + fast policy "System 1"'],
-    ['2025','agent','Claude Code','Agentic coding in the terminal'],
-    ['2025','robot','GR00T · Gemini Robotics','Open humanoid foundation model · Gemini-based VLA'],
-    ['2025','agent','METR horizons','Agent task length doubling roughly every 7 months'],
-    ['2025','reason','IMO gold','LLMs reach gold-medal level at the Math Olympiad'],
-    ['2025','robot','Gemini Robotics 1.5','Embodied reasoning agent orchestrating a VLA'],
-    ['2025','robot','Periodic Labs','$300M seed for AI scientists that run robot labs'],
-    ['2026','robot','C5R Facility-0','A research facility run end-to-end by one model'],
-    ['2026','now','Today','Agents ship code · humanoid pilots · self-driving labs']];
+    ['2024','reason','RLVR named','Tülu 3: reinforcement learning with verifiable rewards']];
+  const F=[
+    ['Jan 2025','reason','DeepSeek-R1','Open model: reasoning emerges from verifiable reward alone'],
+    ['Feb 2025','robot','Figure Helix','Humanoid: slow VLM "System 2" + fast policy "System 1"'],
+    ['Feb 2025','agent','Claude Code','Agentic coding in the terminal'],
+    ['Mar 2025','robot','Gemini Robotics','Gemini 2.0 turned into a vision-language-action model'],
+    ['Mar 2025','robot','GR00T N1','NVIDIA: first open foundation model for humanoid robots'],
+    ['Mar 2025','agent','METR horizons','Agent task length doubling roughly every 7 months'],
+    ['Apr 2025','robot','π0.5','Physical Intelligence: cleans kitchens in homes it has never seen'],
+    ['May 2025','reason','AlphaEvolve','Gemini + evolution discovers new algorithms (4×4 matrices in 48 mults)'],
+    ['Jul 2025','reason','IMO gold','LLMs reach gold-medal level at the Math Olympiad'],
+    ['Sep 2025','robot','Gemini Robotics 1.5','Embodied reasoning agent orchestrating a VLA'],
+    ['Sep 2025','robot','Periodic Labs','$300M seed for AI scientists that run robot labs'],
+    ['Nov 2025','robot','π*0.6','Robot learns from its own experience with RL — throughput doubles'],
+    ['Dec 2025','reason','Erdős sweep','DeepMind agent attacks all 700 open Erdős problems; solves a few new ones'],
+    ['Apr 2026','robot','π0.7','Composes known skills to do tasks it was never trained on'],
+    ['Apr 2026','robot','GR00T N1.7','Open humanoid model learning from human first-person video'],
+    ['Aug 2026','reason','Astra: 10 open problems','Unreleased model settles 10 open math problems, Lean-verified'],
+    ['Sep 2026','reason','Navier–Stokes','OpenAI: AI proof of blow-up for a Millennium Prize problem (under review)'],
+    ['Sep 2026','robot','C5R Facility-0','A research facility run end-to-end by one model'],
+    ['Oct 2026','reason','722 math papers','OpenAI publishes 722 AI-written manuscripts on open problems'],
+    ['Oct 2026','now','Today','Agents ship code · humanoid pilots · self-driving labs']];
   const col={scale:C.amber,reason:C.cyan,agent:C.green,robot:C.pink,now:'#ffffff'};
-  const tl=el.querySelector('.tl'),prog=tl.querySelector('.prog'),card=el.querySelector('.tlcard');
-  tl.querySelectorAll('.ev,.yr').forEach(n=>n.remove());
-  const cls=['up','dn','up2','dn2'];let lastY='';
-  const evs=E.map((e,i)=>{const d=document.createElement('div');d.className='ev '+cls[i%4];d.style.left=(i/(E.length-1)*100)+'%';d.style.color=col[e[1]];
-    const tall=i%4>1,stemH=tall?82:26;
-    d.innerHTML=`<div class="stem" style="${i%2?'top':'bottom'}:22px;height:${stemH-12}px"></div><div class="dot"></div><div class="lab">${e[2]}<small>${e[0]}</small></div>`;
-    tl.appendChild(d);
-    if(e[0]!==lastY){const y=document.createElement('div');y.className='yr';y.style.left=`calc(${i/(E.length-1)*100}% - 26px)`;y.style.top='150px';y.textContent=e[0];tl.appendChild(y);lastY=e[0]}
-    d.onmouseenter=d.onclick=()=>{auto=false;sel(i)};return d});
+  const tls=el.querySelectorAll('.tl'),card=el.querySelector('.tlcard'),ALL=[...E,...F];
+  tls.forEach(t=>t.querySelectorAll('.ev,.yr').forEach(n=>n.remove()));
+  const evs=[];
+  function lay(list,tl,lv,off){list.forEach((e,i)=>{const d=document.createElement('div'),k=i%lv,cls=['up','dn','up2','dn2'][k];
+    d.className='ev '+cls;d.style.left=(i/(list.length-1)*100)+'%';d.style.color=col[e[1]];
+    const stemH=k>1?82:26;
+    d.innerHTML=`<div class="stem" style="${k%2?'top':'bottom'}:22px;height:${stemH-12}px"></div><div class="dot"></div><div class="lab">${e[2]}<small>${e[0]}</small></div>`;
+    tl.appendChild(d);const n=off+i;d.onmouseenter=d.onclick=()=>{auto=false;sel(n)};evs.push(d)})}
+  lay(E,tls[0],2,0);lay(F,tls[1],4,E.length);
   let auto=true,si=-1;
-  function sel(i){si=i;evs.forEach(e=>e.classList.remove('sel'));evs[i].classList.add('sel');const e=E[i];
+  function sel(i){si=i;evs.forEach(e=>e.classList.remove('sel'));evs[i].classList.add('sel');const e=ALL[i];
     card.querySelector('.d').textContent=e[0];card.querySelector('.d').style.color=col[e[1]];card.querySelector('.t').textContent=e[2];card.querySelector('.x').textContent=e[3]}
-  prog.style.transition='none';prog.style.width='0';
-  requestAnimationFrame(()=>{prog.style.transition='width 4s linear';prog.style.width='100%'});
-  evs.forEach((e,i)=>later(sig,i*4000/E.length,()=>{e.classList.add('on');if(auto)sel(i)}));
-  later(sig,4300,()=>every(sig,1800,()=>{if(auto)sel((si+1)%E.length)}));
+  const TA=1500,TB=3000;
+  tls.forEach((t,j)=>{const p=t.querySelector('.prog');p.style.transition='none';p.style.width='0';
+    later(sig,j?TA:30,()=>{p.style.transition=`width ${(j?TB:TA)/1000}s linear`;p.style.width='100%'})});
+  evs.forEach((e,i)=>{const at=i<E.length?i*TA/E.length:TA+(i-E.length)*TB/F.length;later(sig,at,()=>{e.classList.add('on');if(auto)sel(i)})});
+  later(sig,TA+TB+300,()=>every(sig,1800,()=>{if(auto)sel((si+1)%ALL.length)}));
 };
 
 /* ---------------- 8 TTC ---------------- */

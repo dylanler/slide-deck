@@ -28,7 +28,7 @@ Swipe works on touch screens. The tiny controls appear top-right on hover.
 4. The Bitter Lesson — human knowledge vs. search + learning, cycling domains
 5. Scaling laws — log-log loss curves, compute slider
 6. Three ways to spend compute — read more (pretraining + SFT), practice more (RL), think longer (test-time), with real examples and the training-vs-using split
-7. Chronology 2019 → 2026 (hover dots)
+7. Chronology — two tracks: 2019–2024, then a zoomed 2025 → Oct 2026 line (π0.5, GR00T, AlphaEvolve, Erdős problems, Navier–Stokes, 722 AI math papers…); hover dots
 8. Test-time compute — animated tree search + accuracy curve
 9. RLVR — sample → verify → reinforce loop
 10. Agentic coding — live terminal + METR task-horizon chart
