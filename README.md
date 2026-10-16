@@ -23,7 +23,7 @@ Swipe works on touch screens. The tiny controls appear top-right on hover.
 ## Slides
 
 1. Title — compute flowing up an exponential
-2. 2023 recap — the 4-stage GPT recipe
+2. How a chatbot is made — 4 animated, plain-language scenes (guess the next word → learn from examples → humans rank answers → practice against the judge); click a step to jump
 3. 2023 hints → 2026 reality (click cards to flip)
 4. The Bitter Lesson — human knowledge vs. search + learning, cycling domains
 5. Scaling laws — log-log loss curves, compute slider

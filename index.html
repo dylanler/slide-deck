@@ -26,16 +26,13 @@ canvas{display:block}
 .quote b{font-style:normal;color:var(--amber)}
 .right{position:absolute;right:80px;top:64px;text-align:right;z-index:3}
 /* recap */
-.pipe{display:flex;gap:16px;margin-top:70px;height:360px}
-.stg{position:relative;flex:1;border:1px solid var(--line);border-radius:18px;background:#0f121b;padding:24px;overflow:hidden;transition:.4s;display:flex;flex-direction:column;justify-content:flex-end}
-.stg.big{flex:4.2}
-.stg b{font-size:30px;position:relative}
-.stg span{color:var(--dim);font-size:17px;position:relative;margin-top:6px}
-.stg em{position:absolute;top:18px;right:22px;font:800 46px ui-monospace,monospace;color:var(--amber);font-style:normal}
-.stg.lit{border-color:var(--amber);box-shadow:0 0 50px rgba(255,176,32,.25);transform:translateY(-6px)}
-.stg canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.55}
-.out{display:flex;gap:16px;margin-top:22px;font-size:22px;color:var(--dim)}
-.out div{flex:1;text-align:center}.out div:first-child{flex:4.2}
+.steps{display:flex;gap:12px;margin-top:24px;position:relative;z-index:3}
+.steps button{flex:1;position:relative;overflow:hidden;background:#10131c;border:1px solid var(--line);color:#aab1c0;border-radius:14px;padding:13px 16px;font:650 20px Inter,"Segoe UI",system-ui,sans-serif;text-align:left;cursor:pointer;transition:border-color .3s,color .3s}
+.steps button b{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#1b2030;margin-right:10px;color:#fff;font-size:16px}
+.steps button small{display:block;font:500 13px ui-monospace,Menlo,monospace;color:var(--dim);margin:4px 0 0 40px}
+.steps button:after{content:"";position:absolute;left:0;bottom:0;height:3px;width:calc(var(--p,0) * 100%);background:var(--amber)}
+.steps button.on{border-color:var(--amber);color:#fff}
+.steps button.on b{background:var(--amber);color:#111}
 /* cards */
 .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:22px;margin-top:70px}
 .card{height:380px;perspective:1400px;cursor:pointer}
@@ -106,16 +103,16 @@ input[type=range]{accent-color:var(--amber);width:300px}
 </section>
 
 <!-- 2 RECAP -->
-<section class="slide" data-anim="recap" data-notes="(0:15) Recap of 2023. Four stages. Pretraining is 99% of the compute; the rest is small finetuning. The output was a chat assistant.">
+<section class="slide" data-anim="recap" data-notes="(0:15) Four steps, like school. One: read the whole internet and play 'guess the next word' trillions of times — that's 99% of the effort, and you get a well-read autocomplete. Two: learn the job from examples people wrote — now it answers instead of rambling. Three: people rank answers, and a judge model learns their taste. Four: practice against the judge. Out comes ChatGPT. Click any step.">
   <div class="kicker">2023 · Recap</div>
-  <h2>How GPT was made</h2>
-  <div class="pipe">
-    <div class="stg big"><canvas></canvas><em>99%</em><b>Pretraining</b><span>internet text · 1000s GPUs · months</span></div>
-    <div class="stg"><b>SFT</b><span>~10k demos</span></div>
-    <div class="stg"><b>Reward model</b><span>rankings</span></div>
-    <div class="stg"><b>RL</b><span>from human feedback</span></div>
+  <h2>How a chatbot is made</h2>
+  <div class="steps">
+    <button><b>1</b>Read the internet<small>pretraining</small></button>
+    <button><b>2</b>Learn from examples<small>fine-tuning (SFT)</small></button>
+    <button><b>3</b>Humans grade answers<small>reward model</small></button>
+    <button><b>4</b>Practice for high scores<small>reinforcement learning</small></button>
   </div>
-  <div class="out"><div>→ base model</div><div>→ SFT model</div><div>→ scorer</div><div>→ ChatGPT</div></div>
+  <div class="area" style="top:262px;bottom:36px"><canvas class="full"></canvas></div>
 </section>
 
 <!-- 3 HINTS -->
@@ -149,9 +146,9 @@ input[type=range]{accent-color:var(--amber);width:300px}
 </section>
 
 <!-- 6 THREE AXES -->
-<section class="slide" data-anim="axes" data-notes="(1:15) The big change since 2023: there is not one scaling law, there are three. Pretraining, RL post-training, and thinking time at inference. Each is a new way to turn compute into intelligence.">
-  <div class="kicker">2020 → 2024</div>
-  <h2>One law became three</h2>
+<section class="slide" data-anim="axes" data-notes="(1:15) Since 2023 there are three knobs for turning compute into intelligence. Read more: pretraining, plus SFT, which plays the same imitation game on curated examples. Practice more: RL — DeepSeek-R1-Zero went from 16% to 71% on AIME math just by practising, and its answers grew longer on their own. Think longer: same model, more thinking per question — 71% becomes 87% with 64 attempts and a vote. The first two are paid once and change the model. The third is paid on every question. They're linked: practice is what teaches the model to use extra thinking time.">
+  <div class="kicker">2020 → 2024 · scaling, three ways</div>
+  <h2>Three ways to spend compute</h2>
   <div class="area" style="top:210px"><canvas class="full"></canvas></div>
 </section>
 
@@ -283,14 +280,14 @@ const A={};
 function fit(){S=Math.min(innerWidth/1600,innerHeight/900);stage.style.transform=`translate(-50%,-50%) scale(${S})`}
 function cv(el){const w=el.clientWidth,h=el.clientHeight,d=(devicePixelRatio||1)*S;el.width=Math.max(1,Math.round(w*d));el.height=Math.max(1,Math.round(h*d));const c=el.getContext('2d');c.setTransform(d,0,0,d,0,0);return{c,w,h}}
 function mpos(el,e){const r=el.getBoundingClientRect();return{x:(e.clientX-r.left)*el.clientWidth/r.width,y:(e.clientY-r.top)*el.clientHeight/r.height}}
-function run(sig,fn){const t0=performance.now();let last=t0;const f=t=>{if(sig.aborted)return;fn((t-t0)/1000,Math.min(.05,(t-last)/1000));last=t;requestAnimationFrame(f)};requestAnimationFrame(f)}
+function run(sig,fn){const t0=performance.now();let last=t0;const f=t=>{if(sig.aborted)return;fn(Math.max(0,(t-t0)/1000),clamp((t-last)/1000,0,.05));last=t;requestAnimationFrame(f)};requestAnimationFrame(f)}
 function every(sig,ms,fn){const id=setInterval(fn,ms);sig.addEventListener('abort',()=>clearInterval(id))}
 function later(sig,ms,fn){const id=setTimeout(fn,ms);sig.addEventListener('abort',()=>clearTimeout(id))}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t,ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
 function shade(hex,f){const n=parseInt(hex.slice(1),16);const m=v=>Math.round(clamp(f>1?v+(255-v)*(f-1):v*f,0,255));return`rgb(${m(n>>16)},${m(n>>8&255)},${m(n&255)})`}
 function rgba(hex,a){const n=parseInt(hex.slice(1),16);return`rgba(${n>>16},${n>>8&255},${n&255},${a})`}
 function T(c,s,x,y,o={}){c.font=`${o.w||500} ${o.s||16}px ${o.mono?'ui-monospace,Menlo,Consolas,monospace':'Inter,Segoe UI,system-ui,sans-serif'}`;c.fillStyle=o.c||'#e9ecf3';c.textAlign=o.a||'left';c.textBaseline=o.b||'middle';c.fillText(s,x,y)}
-function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+function rr(c,x,y,w,h,r){r=Math.min(r,w/2,h/2);c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
 function arrow(c,x1,y1,x2,y2,col,lw=2){c.strokeStyle=col;c.fillStyle=col;c.lineWidth=lw;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();const a=Math.atan2(y2-y1,x2-x1);c.beginPath();c.moveTo(x2,y2);c.lineTo(x2-10*Math.cos(a-.4),y2-10*Math.sin(a-.4));c.lineTo(x2-10*Math.cos(a+.4),y2-10*Math.sin(a+.4));c.fill()}
 const C={amber:'#ffb020',cyan:'#38d6ff',pink:'#ff4f8b',green:'#4ade80',violet:'#a78bfa',dim:'#7d8597',line:'#252a3a',fg:'#e9ecf3'};
 
@@ -333,13 +330,109 @@ A.title=(el,sig)=>{
 
 /* ---------------- 2 RECAP ---------------- */
 A.recap=(el,sig)=>{
-  const stg=[...el.querySelectorAll('.stg')];const cvs=el.querySelector('.stg canvas');const{c,w,h}=cv(cvs);
-  const cols=[...Array(Math.floor(w/26))].map(()=>({y:Math.random()*h,s:40+Math.random()*120}));
-  let k=0;stg.forEach(s=>s.classList.remove('lit'));stg[0].classList.add('lit');
-  every(sig,1100,()=>{stg.forEach(s=>s.classList.remove('lit'));k=(k+1)%4;stg[k].classList.add('lit')});
-  run(sig,(t,dt)=>{c.fillStyle='rgba(15,18,27,.25)';c.fillRect(0,0,w,h);
-    cols.forEach((o,i)=>{o.y+=o.s*dt;if(o.y>h+20){o.y=-20;o.s=40+Math.random()*120}
-      T(c,String(Math.random()*50257|0),i*26+4,o.y,{s:11,c:'rgba(255,176,32,.8)',mono:1})})});
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
+  const btns=[...el.querySelectorAll('.steps button')],DUR=7;let t0=0,tNow=0,FA=1,last=-1,docs=[],tries=[],scores=[];
+  btns.forEach((b,i)=>b.onclick=()=>{t0=tNow-i*DUR-.01});
+  const ga=a=>c.globalAlpha=FA*a,SH=h-120;
+  const font=(s,wt)=>`${wt||500} ${s}px Inter,Segoe UI,system-ui,sans-serif`;
+  const cap=(a,b)=>{ga(1);T(c,a,0,h-70,{s:36,w:800});T(c,b,0,h-26,{s:21,c:C.dim})};
+  const typed=(s,p)=>s.slice(0,Math.floor(clamp(p,0,1)*s.length));
+  const NODES=[...Array(22)].map((_,i)=>[Math.sin(i*12.9898)*.8,Math.sin(i*78.233)*.8]);
+  function brain(x,y,r,t,col=C.amber){
+    const g=c.createRadialGradient(x,y,r*.1,x,y,r*1.3);g.addColorStop(0,rgba(col,.35));g.addColorStop(1,rgba(col,0));
+    ga(1);c.fillStyle=g;c.beginPath();c.arc(x,y,r*1.3,0,7);c.fill();
+    c.strokeStyle=rgba(col,.8);c.lineWidth=2.5;c.beginPath();c.arc(x,y,r,0,7);c.stroke();
+    NODES.forEach((a,i)=>NODES.forEach((b,j)=>{if(j<=i)return;const d=Math.hypot(a[0]-b[0],a[1]-b[1]);if(d>.55)return;
+      ga(.25+.5*Math.max(0,Math.sin(t*3+i+j)));c.strokeStyle=col;c.lineWidth=1;c.beginPath();c.moveTo(x+a[0]*r,y+a[1]*r);c.lineTo(x+b[0]*r,y+b[1]*r);c.stroke()}));
+    ga(1);NODES.forEach(([a,b],i)=>{c.fillStyle=i%3?col:'#fff';c.beginPath();c.arc(x+a*r,y+b*r,3.5,0,7);c.fill()})}
+  function gauge(x,y,r,v,lab){ga(1);c.lineWidth=14;c.lineCap='round';c.strokeStyle='#1b2030';c.beginPath();c.arc(x,y,r,Math.PI,0);c.stroke();
+    const col=v>.66?C.green:v>.33?C.amber:C.pink;c.strokeStyle=col;c.beginPath();c.arc(x,y,r,Math.PI,Math.PI+Math.PI*v);c.stroke();c.lineCap='butt';
+    const a=Math.PI+Math.PI*v;c.strokeStyle='#fff';c.lineWidth=4;c.beginPath();c.moveTo(x,y);c.lineTo(x+Math.cos(a)*(r-20),y+Math.sin(a)*(r-20));c.stroke();
+    c.fillStyle='#fff';c.beginPath();c.arc(x,y,7,0,7);c.fill();if(lab)T(c,lab,x,y+30,{s:18,w:700,a:'center',c:C.dim})}
+  function card(x,y,cw,chh,lines,o={}){ga(o.a??1);rr(c,x,y,cw,chh,14);c.fillStyle=o.bg||'#121624';c.fill();c.strokeStyle=o.st||C.line;c.lineWidth=o.lw||1.5;c.stroke();
+    lines.forEach((l,i)=>T(c,l,x+18,y+28+i*28,{s:o.s||19,c:o.c||'#cfd5e2',w:o.w||500}));ga(1)}
+
+  const SRC=['Wikipedia','Books','Code','News','Forums','Recipes','Science','Song lyrics','How-to guides'];
+  function s0(lt,t,dt){
+    const bx=w*.27,by=SH*.45;
+    if(Math.random()<dt*7)docs.push({u:0,y:20+Math.random()*(SH-60),l:SRC[Math.random()*SRC.length|0],s:.35+Math.random()*.25});
+    for(let i=docs.length-1;i>=0;i--){const d=docs[i];d.u+=dt*d.s;if(d.u>=1){docs.splice(i,1);continue}
+      const e=ease(d.u),x=lerp(0,bx,e),y=lerp(d.y,by,e),k=1-d.u*.75;ga(1-d.u*.6);
+      rr(c,x-42*k,y-28*k,84*k,56*k,6);c.fillStyle='#1b2030';c.fill();c.strokeStyle='#353c50';c.lineWidth=1;c.stroke();
+      c.fillStyle='#4a5266';for(let j=0;j<3;j++)c.fillRect(x-32*k,y-14*k+j*11*k,64*k*(j===2?.55:1),4*k);
+      if(d.u<.45)T(c,d.l,x,y-40*k,{s:13,c:C.dim,a:'center'})}
+    brain(bx,by,95,t);
+    ga(1);T(c,'99% of the effort',bx,by+142,{s:22,w:800,c:C.amber,a:'center'});T(c,'thousands of chips · months',bx,by+170,{s:15,c:C.dim,a:'center'});
+    const two=lt>=3.4,l2=two?lt-3.4:lt,ex=two?['Once upon a',[['time',.94],['hill',.02],['dream',.01]]]:['The capital of France is',[['Paris',.91],['Lyon',.03],['a',.02]]];
+    const rx=w*.52;T(c,'The game: guess the next word',rx,18,{s:17,c:C.dim,w:600});
+    c.font=font(40,750);const tw=c.measureText(ex[0]).width;T(c,typed(ex[0],l2/1),rx,82,{s:40,w:750});
+    if(l2>1){const bxx=rx+tw+16,fill=l2>2.3;c.setLineDash(fill?[]:[8,6]);rr(c,bxx,54,170,56,10);c.strokeStyle=fill?C.amber:'#5a6172';c.lineWidth=2.5;c.stroke();c.setLineDash([]);
+      if(fill){c.fillStyle=rgba(C.amber,.15);c.fill();T(c,ex[1][0][0],bxx+85,83,{s:38,w:800,c:C.amber,a:'center'})}else T(c,'?',bxx+85,83,{s:34,w:800,c:'#5a6172',a:'center'})}
+    const bp=ease(clamp((l2-1.1)*1.4,0,1));
+    ex[1].forEach(([wd,p],i)=>{const y=160+i*56,bw=(w-rx-200)*p*bp;T(c,wd,rx,y,{s:24,w:650,c:i?'#aab1c0':'#fff'});
+      rr(c,rx+130,y-16,Math.max(4,bw),32,8);c.fillStyle=i?'#3a4152':C.amber;c.fill();T(c,Math.round(p*100*bp)+'%',rx+142+bw,y,{s:20,w:700,mono:1,c:i?C.dim:C.amber})});
+    cap('Read the internet. Guess the next word.','Trillions of guesses later: a very well-read autocomplete — not an assistant yet.')}
+
+  function s1(lt,t){
+    const pw=w*.6;card(0,0,pw,SH,[],{bg:'#0e1119'});
+    ga(1);c.font=font(22,600);const q='Write a poem about cheese.',qw=c.measureText(q).width+40;
+    rr(c,pw-qw-24,22,qw,48,24);c.fillStyle=C.cyan;c.fill();T(c,q,pw-qw-4,47,{s:22,w:600,c:'#06202a'});T(c,'You',pw-qw-34,47,{s:15,c:C.dim,a:'right'});
+    if(lt>.6){T(c,'Step 1 model (autocomplete):',24,110,{s:16,c:C.pink,w:700,mono:1});
+      T(c,typed('Write a poem about bread. Write a poem about wine.',(lt-.8)/1.3),24,146,{s:22,c:'#cfd5e2'});
+      T(c,typed('Write a poem about grapes. Write a…',(lt-2.1)/.8),24,178,{s:22,c:'#cfd5e2'});
+      if(lt>3){T(c,'✗ it just continues the page',24,214,{s:18,c:C.pink,w:700})}}
+    if(lt>3.3){T(c,'Step 2 model (after examples):',24,272,{s:16,c:C.green,w:700,mono:1});
+      T(c,typed('Golden wheel, so mellow,',(lt-3.5)/.8),24,310,{s:24,w:600,c:'#fff'});
+      T(c,typed('sharp and soft and yellow.',(lt-4.3)/.8),24,344,{s:24,w:600,c:'#fff'});
+      if(lt>5.2)T(c,'✓ it answers like a helper',24,384,{s:18,c:C.green,w:700})}
+    const sx=pw+60,sw=w-sx-10;T(c,'examples written by people',sx,18,{s:17,c:C.dim,w:600});
+    const EX=[['Q: Explain tides to a kid','A: The Moon gently pulls…'],['Q: Fix my email tone','A: Here is a friendlier…'],['Q: Plan a 3-day trip','A: Day 1: arrive and…'],['Q: What is inflation?','A: Prices rising over…'],['Q: Poem about the sea','A: Blue hands of water…']];
+    const n=Math.min(40,Math.floor(lt*6));
+    for(let i=0;i<n;i++){const k=Math.min(i,8),u=clamp(lt*6-i,0,1),y=60+k*30,x=sx+k*6+(1-ease(u))*200;
+      card(x,y,sw-60,100,EX[i%5],{a:u,s:17,c:i===n-1?'#fff':'#aab1c0',st:i===n-1?C.green:C.line})}
+    ga(1);T(c,(n<40?n*250:'10,000+').toLocaleString(),sx,SH-30,{s:40,w:800,c:C.green,mono:1});T(c,'examples',sx+(n<40?140:250),SH-28,{s:18,c:C.dim});
+    cap('Learn the job from examples.','Same guessing game — now on ideal answers that people wrote.')}
+
+  const HK=[{l:['Bent silver river,','holding my whole afternoon','in one quiet loop.'],r:0,s:.88},{l:['A paper clip clips.','It is a clip for paper.','Clips are good. The end.'],r:1,s:.45},{l:['clip clip clip clip','clip clip clip clip clip','clip clip clip clip'],r:2,s:.12}];
+  const ORD=[1,2,0];
+  function s2(lt,t){
+    ga(1);c.font=font(24,650);const p='"Write a haiku about paper clips"';const pw2=c.measureText(p).width+44;
+    rr(c,0,0,pw2,50,25);c.fillStyle=C.cyan;c.fill();T(c,p,22,26,{s:24,w:650,c:'#06202a'});
+    const cw=(w*.68-40)/3,ch=150,mv=ease(clamp((lt-1.4)/1.1,0,1));
+    ORD.forEach((hi,slot)=>{const H2=HK[hi],x0=slot*(cw+20),x1=H2.r*(cw+20),x=lerp(x0,x1,mv),y=90+Math.sin(mv*Math.PI)*-30*(hi===2?-1:1);
+      const ranked=lt>2.6,col=[C.green,C.amber,C.pink][H2.r];
+      card(x,y,cw,ch,H2.l,{st:ranked?col:C.line,lw:ranked?2.5:1.5,s:18});
+      if(ranked){ga(1);rr(c,x+cw-86,y-16,74,32,16);c.fillStyle=col;c.fill();T(c,['1st','2nd','3rd'][H2.r],x+cw-49,y,{s:17,w:800,a:'center',c:'#111'})}
+      if(lt>4.4){ga(clamp((lt-4.4)*2,0,1));T(c,'judge: '+(H2.s*10).toFixed(1),x+18,y+ch+30,{s:20,w:800,mono:1,c:col});ga(1)}});
+    if(lt<2.6&&lt>.6){ga(.6+.4*Math.sin(t*6));T(c,'people rank them…',0,280,{s:20,c:'#cfd5e2',w:600});ga(1)}
+    const jx=w*.86,jy=SH*.55;
+    if(lt>3.1){ga(clamp((lt-3.1)*2,0,1));arrow(c,w*.68+10,165,jx-130,jy-30,rgba(C.violet,.8),3);
+      brain(jx,jy-70,46,t,C.violet);T(c,'Judge model',jx,jy+0,{s:22,w:800,a:'center',c:C.violet});
+      const cur=Math.floor(t*.9)%3;gauge(jx,jy+120,70,HK[cur].s*ease(clamp((lt-3.6)*2,0,1)),'learns their taste');ga(1)}
+    cap('People rank answers. A judge model learns their taste.','Judging is easier than writing — anyone can tell which haiku is better.')}
+
+  function s3(lt,t,dt){
+    const mx=110,my=SH*.42,jx=w*.42,jy=SH*.42;
+    brain(mx,my,70,t,C.cyan);ga(1);T(c,'Chatbot',mx,my+105,{s:20,w:800,a:'center',c:C.cyan});
+    const k=Math.floor(lt/.55);
+    if(tries.length<k&&lt<6.3){const q=clamp(.15+tries.length*.075+(Math.random()-.5)*.25,.05,.97);tries.push({b:lt,q});scores.push(q)}
+    tries.forEach(tr=>{const u=(lt-tr.b)/.9;if(u>1.6)return;const x=lerp(mx+70,jx-110,ease(clamp(u,0,1))),y=my-10+Math.sin(clamp(u,0,1)*Math.PI)*-40;
+      if(u<1){card(x-50,y-20,100,40,['answer'],{s:15,a:1-u*.3})}
+      else{const good=tr.q>.55;ga(1-(u-1)/.6);T(c,good?'↑ do more of this':'↓ do less',jx-110,my+(good?-70:70),{s:18,w:800,c:good?C.green:C.pink});ga(1)}});
+    const curq=scores.length?scores[scores.length-1]:0;gauge(jx,jy+30,80,curq,'judge score');
+    const cx0=w*.6,cy0=20,cw=w-cx0-10,chh=SH-70;ga(1);T(c,'average score over practice',cx0,cy0,{s:17,c:C.dim,w:600});
+    c.strokeStyle=C.line;c.lineWidth=2;c.beginPath();c.moveTo(cx0,cy0+20);c.lineTo(cx0,cy0+chh);c.lineTo(cx0+cw,cy0+chh);c.stroke();
+    let acc=0;c.beginPath();scores.forEach((s,i)=>{acc=i?acc*.6+s*.4:s;const x=cx0+(i+1)/12*cw,y=cy0+chh-acc*(chh-30);i?c.lineTo(x,y):c.moveTo(x,y)});
+    c.strokeStyle=C.green;c.lineWidth=4;c.shadowColor=C.green;c.shadowBlur=14;c.stroke();c.shadowBlur=0;
+    scores.forEach((s,i)=>{c.fillStyle=s>.55?C.green:C.pink;c.beginPath();c.arc(cx0+(i+1)/12*cw,cy0+chh-s*(chh-30),5,0,7);c.fill()});
+    if(lt>5.6){ga(clamp((lt-5.6)*2,0,1));rr(c,cx0+cw-230,cy0+30,220,56,14);c.fillStyle=C.green;c.fill();T(c,'= ChatGPT',cx0+cw-120,cy0+58,{s:28,w:800,a:'center',c:'#06200f'});ga(1)}
+    cap('Practice to please the judge.','Try → get scored → do more of what scored well. Out comes ChatGPT.')}
+
+  run(sig,(t,dt)=>{tNow=t;const T2=((t-t0)%(DUR*4)+DUR*4)%(DUR*4),st=Math.floor(T2/DUR),lt=T2-st*DUR;
+    if(st!==last){last=st;docs=[];tries=[];scores=[]}
+    btns.forEach((b,i)=>{b.classList.toggle('on',i===st);b.style.setProperty('--p',i===st?lt/DUR:i<st?1:0)});
+    c.clearRect(0,0,w,h);FA=clamp(lt*3,0,1)*clamp((DUR-lt)*3,0,1);
+    [s0,s1,s2,s3][st](lt,t,dt);c.globalAlpha=1});
 };
 
 /* ---------------- 3 HINTS ---------------- */
@@ -408,20 +501,58 @@ A.scaling=(el,sig)=>{
 /* ---------------- 6 AXES ---------------- */
 A.axes=(el,sig)=>{
   const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
-  const P=[{n:'Pretraining',y:'2020',x:'train compute (log)',col:C.amber},{n:'RL post-training',y:'2024',x:'RL compute (log)',col:C.green},{n:'Test-time thinking',y:'2024',x:'thinking tokens (log)',col:C.cyan}];
-  const gap=40,pw=(w-gap*2)/3;
+  const P=[
+    {n:'Read more',k:'pretraining (+ SFT)',an:'a student reading the whole library',col:C.amber,ex:'GPT-2 → GPT-3 → GPT-4',exs:'~100× more training compute per generation',xl:'training compute (log)',yl:'quality'},
+    {n:'Practice more',k:'RL post-training',an:'doing problem sets with an answer key',col:C.green,ex:'DeepSeek-R1-Zero, AIME math exam',exs:'15.6% → 71% from practice alone',xl:'RL practice steps',yl:'accuracy'},
+    {n:'Think longer',k:'test-time compute',an:'taking more time on the exam',col:C.cyan,ex:'Same model, more tries per question',exs:'71% → 86.7% with 64 tries + a vote',xl:'thinking per question (log)',yl:'accuracy'}];
+  const gap=30,pw=(w-gap*2)/3,BOX=480,AZ=[100,280],CH=[372,460];
+  const noisy=u=>.08+.78*(1-Math.exp(-3.2*u))+.035*Math.sin(u*47)+.02*Math.sin(u*113);
+  const CURVE=[u=>.12+.76*u,u=>clamp(noisy(u),0,1),u=>.25+.6*Math.pow(u,.8)];
+  function chart(i,ox,a){const p=P[i],L=ox+34,R=ox+pw-26,Tp=CH[0],B=CH[1],f=CURVE[i],Y=v=>B-v*(B-Tp);
+    c.strokeStyle=C.line;c.lineWidth=2;c.beginPath();c.moveTo(L,Tp-8);c.lineTo(L,B);c.lineTo(R,B);c.stroke();
+    T(c,p.xl+' →',R,B+16,{s:13,c:C.dim,a:'right'});T(c,p.yl,L+8,Tp-8,{s:13,c:C.dim});
+    c.beginPath();for(let u=0;u<=a;u+=.005){const x=L+u*(R-L);u?c.lineTo(x,Y(f(u))):c.moveTo(x,Y(f(0)))}
+    c.strokeStyle=p.col;c.lineWidth=3.5;c.shadowColor=p.col;c.shadowBlur=12;c.stroke();c.shadowBlur=0;
+    const dot=(u,lab,al)=>{if(a<u)return;const x=L+u*(R-L),y=Y(f(u));c.fillStyle='#fff';c.beginPath();c.arc(x,y,5.5,0,7);c.fill();T(c,lab,x+(al==='right'?-10:10),y-16,{s:14,w:700,a:al||'left'})};
+    if(i===0){dot(.12,'GPT-2');dot(.5,'GPT-3');dot(.88,'GPT-4','right')}
+    if(i===1){dot(.01,'15.6%');dot(.99,'71%','right')}
+    if(i===2){dot(.01,'1 try: 71%');dot(.99,'64 tries: 86.7%','right')}}
+  function anim0(ox,t){const cx=ox+pw*.62,cy=(AZ[0]+AZ[1])/2+6,ph=(t%6)/2,gen=Math.floor(ph),r=lerp([24,40,58][gen],[40,58,58][gen],ease(clamp((ph-gen)*2-1,0,1)));
+    for(let k=0;k<4+gen*4;k++){const u=((t*.6+k/(4+gen*4))%1),bx=ox+30+((k*53)%110),by=AZ[0]+10+((k*37)%140);
+      const x=lerp(bx,cx,ease(u)),y=lerp(by,cy,ease(u));c.globalAlpha=1-u;c.fillStyle=[C.amber,'#e07b39','#c9a227'][k%3];c.fillRect(x-9,y-12,18,24);c.fillStyle='#0e1119';c.fillRect(x-6,y-12,2,24);c.globalAlpha=1}
+    const g=c.createRadialGradient(cx,cy,2,cx,cy,r*1.4);g.addColorStop(0,rgba(C.amber,.6));g.addColorStop(1,rgba(C.amber,0));c.fillStyle=g;c.beginPath();c.arc(cx,cy,r*1.4,0,7);c.fill();
+    c.strokeStyle=C.amber;c.lineWidth=2.5;c.beginPath();c.arc(cx,cy,r,0,7);c.stroke();
+    T(c,['GPT-2','GPT-3','GPT-4'][gen],cx,cy,{s:16,w:800,a:'center'});T(c,'bigger model, more text',cx,AZ[1]-2,{s:14,c:C.dim,a:'center'})}
+  function anim1(ox,t){const ph=t%5,cols=8,rows=3,cs=30,gx=ox+30,gy=AZ[0]+18;let ok=0,n=0;
+    T(c,'problem set',gx,AZ[0]+4,{s:13,c:C.dim});
+    for(let i=0;i<cols*rows;i++){const x=gx+(i%cols)*(cs+6),y=gy+Math.floor(i/cols)*(cs+6),on=ph>i*.16;
+      rr(c,x,y,cs,cs,6);c.fillStyle=on?'#141a26':'#0b0d14';c.fill();c.strokeStyle=C.line;c.lineWidth=1;c.stroke();
+      if(on){n++;const good=((i*7919)%100)/100<.15+.8*(i/23);if(good)ok++;T(c,good?'✓':'✗',x+cs/2,y+cs/2+1,{s:18,w:800,a:'center',c:good?C.green:C.pink})}}
+    const by=gy+rows*(cs+6)+18;T(c,'answer key score',gx,by,{s:13,c:C.dim});
+    rr(c,gx+130,by-8,170,16,8);c.fillStyle='#1b2030';c.fill();rr(c,gx+130,by-8,Math.max(4,170*(n?ok/n:0)),16,8);c.fillStyle=C.green;c.fill();
+    T(c,'thinking length',gx,by+28,{s:13,c:C.dim});rr(c,gx+130,by+20,Math.max(4,170*n/24),16,8);c.fillStyle=C.cyan;c.fill();
+    T(c,'grows on its own',gx+306,by+28,{s:12,c:C.cyan})}
+  function anim2(ox,t){const ph=(t%5)/3.6,mx=ox+50,my=(AZ[0]+AZ[1])/2;
+    c.fillStyle=rgba(C.cyan,.25);c.strokeStyle=C.cyan;c.lineWidth=2;c.beginPath();c.arc(mx,my,26,0,7);c.fill();c.stroke();T(c,'same',mx,my-6,{s:11,a:'center',w:700});T(c,'model',mx,my+8,{s:11,a:'center',w:700});
+    const ans=['42','42','41','42','40'],L=pw-200;
+    ans.forEach((a,j)=>{const y=AZ[0]+22+j*34,len=L*ease(clamp(ph*1.15-j*.05,0,1));c.strokeStyle=rgba(C.cyan,.35);c.lineWidth=1.5;c.beginPath();c.moveTo(mx+26,my);c.quadraticCurveTo(mx+50,y,mx+60,y);c.stroke();
+      for(let d=0;d<len;d+=14){c.fillStyle=rgba(C.cyan,.5+.5*(d/L));c.beginPath();c.arc(mx+64+d,y,3,0,7);c.fill()}
+      if(ph>1){T(c,a,mx+72+L,y,{s:17,w:800,mono:1,c:a==='42'?C.green:'#aab1c0'})}});
+    if(ph>1.12){T(c,'vote → 42 ✓',ox+pw-24,AZ[1]-2,{s:16,w:800,a:'right',c:C.green})}
+    const kx=ox+pw-36,ky=40;c.strokeStyle='#aab1c0';c.lineWidth=2;c.beginPath();c.arc(kx,ky,13,0,7);c.stroke();const a=t*2;c.beginPath();c.moveTo(kx,ky);c.lineTo(kx+Math.cos(a)*10,ky+Math.sin(a)*10);c.stroke()}
   run(sig,t=>{c.clearRect(0,0,w,h);
-    P.forEach((p,i)=>{const ox=i*(pw+gap),L=ox+30,R=ox+pw-20,Tp=110,B=h-110;const a=clamp((t-i*1.1)/1.6,0,1);
-      rr(c,ox,0,pw,h-50,20);c.fillStyle='#0e1119';c.fill();c.strokeStyle=a>0?rgba(p.col,.5):C.line;c.lineWidth=1.5;c.stroke();
-      T(c,String(i+1),ox+28,48,{s:44,w:800,c:p.col,mono:1});T(c,p.n,ox+78,40,{s:26,w:750});T(c,p.y,ox+78,70,{s:15,c:C.dim,mono:1});
-      c.strokeStyle=C.line;c.lineWidth=2;c.beginPath();c.moveTo(L,Tp);c.lineTo(L,B);c.lineTo(R,B);c.stroke();
-      T(c,p.x,R,B+26,{s:15,c:C.dim,a:'right'});T(c,'capability',L+8,Tp-14,{s:15,c:C.dim});
-      if(!a)return;const f=u=>B-(B-Tp)*(.08+.82*u);
-      c.beginPath();for(let u=0;u<=a;u+=.01){const x=L+u*(R-L),y=f(u);u?c.lineTo(x,y):c.moveTo(x,y)}
-      c.strokeStyle=p.col;c.lineWidth=4;c.shadowColor=p.col;c.shadowBlur=16;c.stroke();c.shadowBlur=0;
-      for(let k=0;k<6;k++){const u=((t*.25+k/6)%1)*a;c.fillStyle=p.col;c.globalAlpha=.8;c.beginPath();c.arc(L+u*(R-L),f(u),4,0,7);c.fill();c.globalAlpha=1}
-    });
-    if(t>3.6){c.globalAlpha=clamp(t-3.6,0,1);T(c,'each axis: a new way to spend compute',w/2,h-14,{s:22,c:'#cfd5e2',a:'center',w:600});c.globalAlpha=1}
+    P.forEach((p,i)=>{const ox=i*(pw+gap),a=clamp((t-.3-i*.9)/1.6,0,1),vis=clamp((t-i*.9)*2,0,1);c.globalAlpha=.25+.75*vis;
+      rr(c,ox,0,pw,BOX,20);c.fillStyle='#0e1119';c.fill();c.strokeStyle=vis?rgba(p.col,.55):C.line;c.lineWidth=1.5;c.stroke();
+      T(c,String(i+1),ox+24,40,{s:40,w:800,c:p.col,mono:1});T(c,p.n,ox+64,32,{s:28,w:800});T(c,p.k,ox+64,60,{s:14,c:p.col,mono:1,w:600});
+      T(c,'like '+p.an,ox+24,84,{s:15,c:C.dim});
+      [anim0,anim1,anim2][i](ox,t);
+      T(c,p.ex,ox+24,302,{s:17,w:750});T(c,p.exs,ox+24,326,{s:15,c:'#aab1c0'});
+      chart(i,ox,a);c.globalAlpha=1});
+    const q=clamp((t-3.4)*1.5,0,1);if(q){c.globalAlpha=q;
+      const x1=pw+gap+pw*.75,x2=2*(pw+gap)+pw*.25,yb=BOX+4;c.strokeStyle=C.green;c.lineWidth=2.5;c.setLineDash([6,6]);c.beginPath();c.moveTo(x1,yb);c.quadraticCurveTo((x1+x2)/2,yb+50,x2,yb+2);c.stroke();c.setLineDash([]);
+      arrow(c,x2-14,yb+12,x2,yb+2,C.green,2.5);T(c,'practice teaches it to use thinking time',(x1+x2)/2,yb+44,{s:15,w:700,a:'center',c:C.green});
+      const by=h-44,br=(x0,x1b,col,lab)=>{c.strokeStyle=col;c.lineWidth=2;c.beginPath();c.moveTo(x0,by-8);c.lineTo(x0,by);c.lineTo(x1b,by);c.lineTo(x1b,by-8);c.stroke();T(c,lab,(x0+x1b)/2,by+22,{s:17,w:700,a:'center',c:col})};
+      br(10,2*pw+gap-10,'#cfd5e2','TRAINING · paid once · makes a better model');br(2*(pw+gap)+10,w-10,C.cyan,'USING · paid on every question · same model');c.globalAlpha=1}
   });
 };
 
@@ -878,6 +1009,7 @@ A.close=(el,sig)=>{
 /* ---------------- NAV ---------------- */
 fit();
 addEventListener('resize',()=>{fit();go(cur)});
+addEventListener('hashchange',()=>{const n=(parseInt(location.hash.slice(1))||1)-1;if(n!==cur)go(n)});
 addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;
   if(['ArrowRight','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();go(cur+1)}
   else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();go(cur-1)}
