@@ -25,6 +25,24 @@ canvas{display:block}
 .quote{font-size:26px;color:#c9cfdb;font-style:italic;position:relative;z-index:2;margin-top:10px}
 .quote b{font-style:normal;color:var(--amber)}
 .right{position:absolute;right:80px;top:64px;text-align:right;z-index:3}
+/* excerpt */
+.xq{position:relative;margin-top:38px;padding-left:92px;z-index:2}
+.xq .qm{position:absolute;left:-6px;top:-40px;font:800 190px/1 Georgia,serif;color:var(--amber);opacity:.85}
+.xq .lead{margin:0;font:600 46px/1.22 Georgia,"Times New Roman",serif;letter-spacing:-.01em;color:#e9ecf3;max-width:1340px}
+.xq .w{opacity:0;transition:opacity .35s}.xq .w.on{opacity:1}
+.xq mark{background:none;color:inherit;background-image:linear-gradient(transparent 62%,rgba(255,176,32,.38) 62%);background-repeat:no-repeat;background-size:0 100%;transition:background-size .8s ease,color .8s}
+.xq mark.on{background-size:100% 100%;color:#ffd27a}
+.beats{position:absolute;left:80px;right:80px;top:380px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;z-index:2}
+.beat{position:relative;background:#0e1119;border:1px solid var(--line);border-radius:16px;padding:20px 22px 22px;opacity:0;transform:translateY(18px);transition:opacity .5s,transform .5s,border-color .5s,box-shadow .5s}
+.beat.on{opacity:1;transform:none}
+.beat b{display:block;font:800 30px ui-monospace,monospace;color:var(--dim);margin-bottom:8px}
+.beat p{margin:0;font:400 20px/1.4 Georgia,serif;color:#aab1c0}
+.beat em{font-style:normal;color:#e9ecf3;font-weight:700}
+.beat:not(:last-child):after{content:"→";position:absolute;right:-15px;top:22px;color:#3a4152;font-size:20px}
+.beat:nth-child(3) b{color:var(--pink)}
+.beat.win b{color:var(--green)}.beat.win.on{border-color:var(--green);box-shadow:0 0 40px -8px rgba(74,222,128,.5)}
+.coda{position:absolute;left:80px;right:80px;top:680px;margin:0;font:italic 30px/1.35 Georgia,serif;color:#cfd5e2;text-align:center;opacity:0;transition:opacity 1s;z-index:2}
+.coda.on{opacity:1}
 /* recap */
 .steps{display:flex;gap:12px;margin-top:24px;position:relative;z-index:3}
 .steps button{flex:1;position:relative;overflow:hidden;background:#10131c;border:1px solid var(--line);color:#aab1c0;border-radius:14px;padding:13px 16px;font:650 20px Inter,"Segoe UI",system-ui,sans-serif;text-align:left;cursor:pointer;transition:border-color .3s,color .3s}
@@ -120,8 +138,33 @@ input[type=range]{accent-color:var(--amber);width:300px}
 <body>
 <div id="stage">
 
-<!-- 1 TITLE -->
-<section class="slide" data-anim="title" data-notes="(0:00) Three years ago Karpathy explained the State of GPT. Today: what happened next, told through one idea — the bitter lesson — and the scaling laws that make it predictable.">
+<!-- 1 BITTER LESSON -->
+<section class="slide" data-anim="bitter" data-notes="(0:00) Open cold. Rich Sutton, 2019: the bitter lesson. Researchers keep building in human knowledge. It helps at first, then plateaus. General methods — search and learning — ride compute and overtake. Chess, Go, speech, vision, language… and now robots.">
+  <div class="kicker">Sutton · 2019</div>
+  <h2>The Bitter Lesson</h2>
+  <div class="quote">General methods that <b>leverage compute</b> win. Every time.</div>
+  <div class="area" style="top:230px"><canvas class="full"></canvas></div>
+</section>
+
+<!-- 2 EXCERPT -->
+<section class="slide" data-anim="excerpt" data-notes="(0:10) His own words, from the 2019 essay. Seventy years of AI research, one lesson: general methods that use computation win, by a large margin. And the pattern repeats in four beats: build in human knowledge, it helps at first, it plateaus, then search and learning at scale break through. Keep those four beats in mind — we'll see them again and again.">
+  <div class="kicker">Rich Sutton · The Bitter Lesson · March 13, 2019</div>
+  <div class="xq">
+    <span class="qm">“</span>
+    <p class="lead">The biggest lesson that can be read from 70 years of AI research is that <mark>general methods that leverage computation</mark> are ultimately the most effective, and <mark>by a large margin</mark>.</p>
+  </div>
+  <div class="beats">
+    <div class="beat"><b>1</b><p>AI researchers have often tried to <em>build knowledge into their agents</em>,</p></div>
+    <div class="beat"><b>2</b><p>this always <em>helps in the short term</em>, and is personally satisfying to the researcher, but</p></div>
+    <div class="beat"><b>3</b><p>in the long run it <em>plateaus and even inhibits further progress</em>, and</p></div>
+    <div class="beat win"><b>4</b><p>breakthrough progress eventually arrives by an opposing approach based on <em>scaling computation by search and learning</em>.</p></div>
+  </div>
+  <p class="coda">“We want AI agents that can discover like we can, not which contain what we have discovered.”</p>
+  <div class="foot">incompleteideas.net/IncIdeas/BitterLesson.html</div>
+</section>
+
+<!-- 3 TITLE -->
+<section class="slide" data-anim="title" data-notes="(0:25) That lesson is the thread of this talk. Three years ago Karpathy explained the State of GPT. Today: what happened next, told through one idea — the bitter lesson — and the scaling laws that make it predictable.">
   <canvas class="full"></canvas>
   <div style="position:relative;z-index:2;margin-top:110px">
     <div class="kicker">State of GPT · 3 years later</div>
@@ -130,8 +173,8 @@ input[type=range]{accent-color:var(--amber);width:300px}
   </div>
 </section>
 
-<!-- 2 RECAP -->
-<section class="slide" data-anim="recap" data-notes="(0:15) Four steps, like school. One: read the whole internet and play 'guess the next word' trillions of times — that's 99% of the effort, and you get a well-read autocomplete. Two: learn the job from examples people wrote — now it answers instead of rambling. Three: people rank answers, and a judge model learns their taste. Four: practice against the judge. Out comes ChatGPT. Click any step.">
+<!-- 4 RECAP -->
+<section class="slide" data-anim="recap" data-notes="(0:35) Four steps, like school. One: read the whole internet and play 'guess the next word' trillions of times — that's 99% of the effort, and you get a well-read autocomplete. Two: learn the job from examples people wrote — now it answers instead of rambling. Three: people rank answers, and a judge model learns their taste. Four: practice against the judge. Out comes ChatGPT. Click any step.">
   <div class="kicker">2023 · Recap</div>
   <h2>How a chatbot is made</h2>
   <div class="steps">
@@ -143,8 +186,8 @@ input[type=range]{accent-color:var(--amber);width:300px}
   <div class="area" style="top:262px;bottom:36px"><canvas class="full"></canvas></div>
 </section>
 
-<!-- 3 HINTS -->
-<section class="slide" data-anim="hints" data-notes="(0:30) The 2023 talk contained the seeds of everything that followed. Click each card: every hint became a product.">
+<!-- 5 HINTS -->
+<section class="slide" data-anim="hints" data-notes="(0:50) The 2023 talk contained the seeds of everything that followed. Click each card: every hint became a product.">
   <div class="kicker">2023 hints → 2026 reality</div>
   <h2>The talk predicted its sequel</h2>
   <div class="cards">
@@ -156,15 +199,7 @@ input[type=range]{accent-color:var(--amber);width:300px}
   </div>
 </section>
 
-<!-- 4 BITTER LESSON -->
-<section class="slide" data-anim="bitter" data-notes="(0:45) Rich Sutton, 2019. Researchers keep building in human knowledge. It helps at first, then plateaus. General methods — search and learning — ride compute and overtake. Chess, Go, speech, vision, language… and now robots.">
-  <div class="kicker">Sutton · 2019</div>
-  <h2>The Bitter Lesson</h2>
-  <div class="quote">General methods that <b>leverage compute</b> win. Every time.</div>
-  <div class="area" style="top:230px"><canvas class="full"></canvas></div>
-</section>
-
-<!-- 5 SCALING LAWS -->
+<!-- 6 SCALING LAWS -->
 <section class="slide" data-anim="scaling" data-notes="(1:00) Scaling laws turned the bitter lesson into engineering. Loss falls as a smooth power law in compute. Drag the slider: you can predict a model before you train it. Chinchilla added: about 20 tokens per parameter.">
   <div class="kicker">Kaplan 2020 · Chinchilla 2022</div>
   <h2>Scaling laws: compute → predictable</h2>
@@ -173,14 +208,14 @@ input[type=range]{accent-color:var(--amber);width:300px}
   <div class="foot">loss ∝ C<sup>−0.05</sup> · ~20 tokens / parameter</div>
 </section>
 
-<!-- 6 THREE AXES -->
+<!-- 7 THREE AXES -->
 <section class="slide" data-anim="axes" data-notes="(1:15) Since 2023 there are three knobs for turning compute into intelligence. Read more: pretraining, plus SFT, which plays the same imitation game on curated examples. Practice more: RL — DeepSeek-R1-Zero went from 16% to 71% on AIME math just by practising, and its answers grew longer on their own. Think longer: same model, more thinking per question — 71% becomes 87% with 64 attempts and a vote. The first two are paid once and change the model. The third is paid on every question. They're linked: practice is what teaches the model to use extra thinking time.">
   <div class="kicker">2020 → 2024 · scaling, three ways</div>
   <h2>Three ways to spend compute</h2>
   <div class="area" style="top:210px"><canvas class="full"></canvas></div>
 </section>
 
-<!-- 7 TIMELINE -->
+<!-- 8 TIMELINE -->
 <section class="slide" data-anim="timeline" data-notes="(1:30) The chronology. Top line: six years, 2019 to 2024. Bottom line: just the last 22 months — more milestones than the six years before. Robots that clean homes they've never seen (π0.5), open humanoid brains (GR00T), and in math: an AI proof on the Navier–Stokes Millennium Problem and 722 AI-written papers on open problems. Hover any dot.">
   <div class="kicker">Chronology</div>
   <h2>2019 → 2026</h2>
@@ -192,7 +227,7 @@ input[type=range]{accent-color:var(--amber);width:300px}
   <div class="tlcard"><div class="d"></div><div><div class="t"></div><div class="x"></div></div></div>
 </section>
 
-<!-- 8 TEST TIME COMPUTE -->
+<!-- 9 TEST TIME COMPUTE -->
 <section class="slide" data-anim="ttc" data-notes="(1:45) Karpathy said: transformers need tokens to think. In 2024 o1 made that native. The model explores, scores and prunes its own reasoning — Tree of Thought, but learned. More thinking tokens, higher accuracy, log-linear.">
   <div class="kicker">2024 · o1 → R1 → thinking models</div>
   <h2>Test-time compute</h2>
@@ -200,14 +235,14 @@ input[type=range]{accent-color:var(--amber);width:300px}
   <div class="area" style="top:250px"><canvas class="full"></canvas></div>
 </section>
 
-<!-- 9 RLVR -->
+<!-- 10 RLVR -->
 <section class="slide" data-anim="rlvr" data-notes="(2:00) RLVR: reinforcement learning with verifiable rewards. Sample many answers, check them automatically — unit tests, math checkers — reinforce the winners. No human labels. Anything with a checker becomes trainable. This is the AlphaGo-for-text he hinted at.">
   <div class="kicker">2024–25 · Tülu 3 · DeepSeek-R1</div>
   <h2>RLVR: just add a checker</h2>
   <div class="area" style="top:200px"><canvas class="full"></canvas></div>
 </section>
 
-<!-- 10 AGENTIC CODING -->
+<!-- 11 AGENTIC CODING -->
 <section class="slide" data-anim="agent" data-notes="(2:15) Agentic coding. The loop: read, plan, edit, run tests, fix. Code is the perfect RLVR domain because tests are verifiers. METR measures task length agents can finish: it doubles roughly every 7 months.">
   <div class="kicker">2025 · Claude Code · Codex · Cursor</div>
   <h2>Agentic coding</h2>
@@ -216,7 +251,7 @@ input[type=range]{accent-color:var(--amber);width:300px}
   <div class="foot">Task horizon at 50% success — approximate, after METR (2025)</div>
 </section>
 
-<!-- 11 VLA -->
+<!-- 12 VLA -->
 <section class="slide" data-anim="vla" data-notes="(2:30) Same recipe, new output. Vision-language-action models: pixels and words in, motor actions out. RT-2 in 2023, then pi-zero, Helix, GR00T, Gemini Robotics.">
   <div class="kicker">2023 → 2025 · Vision-Language-Action</div>
   <h2>Tokens → torques</h2>
@@ -224,21 +259,21 @@ input[type=range]{accent-color:var(--amber);width:300px}
   <div class="chips"><span class="chip">RT-2</span><span class="chip">OpenVLA</span><span class="chip">π0 / π0.5</span><span class="chip">Figure Helix</span><span class="chip">GR00T N1</span><span class="chip">Gemini Robotics</span></div>
 </section>
 
-<!-- 12 EMBODIED -->
+<!-- 13 EMBODIED -->
 <section class="slide" data-anim="embodied" data-notes="(2:45) Karpathy's System 1 / System 2 slide, now with a body. A slow LLM agent plans at about one step per second. A fast VLA policy turns each step into motor commands hundreds of times per second.">
   <div class="kicker">2025 · Embodied agents</div>
   <h2>System 2 plans. System 1 moves.</h2>
   <div class="area" style="top:190px"><canvas class="full"></canvas></div>
 </section>
 
-<!-- 13 MIND MAP -->
+<!-- 14 MIND MAP -->
 <section class="slide" data-anim="mindmap" data-notes="(3:00) One idea, five branches. Compute flows out from the center. Drag the nodes around.">
   <div class="kicker">The pattern</div>
   <h2>Bitter lesson, everywhere</h2>
   <div class="area" style="top:170px;bottom:30px"><canvas class="full"></canvas></div>
 </section>
 
-<!-- 14 ACTUATOR -->
+<!-- 15 ACTUATOR -->
 <section class="slide" data-anim="actuator" data-notes="(3:15) Next: atoms. The humanoid's core part is the actuator — a robot has 30 to 50 of them. Exploded: driver board, encoder, brake, stator, magnet rotor, strain-wave gear, cross-roller bearing, torque sensor. Switch to the linear version, the planetary roller screw. Hover any part.">
   <div class="kicker">Near future · Humanoids</div>
   <h2>Inside a joint actuator</h2>
@@ -249,7 +284,7 @@ input[type=range]{accent-color:var(--amber);width:300px}
   <div class="panel" style="right:80px;top:620px;width:390px;height:170px;display:flex;align-items:center;gap:20px"><div class="big-stat">30–50</div><p style="margin:0">actuators per humanoid — the robot's real bill of materials</p></div>
 </section>
 
-<!-- 15 BOM -->
+<!-- 16 BOM -->
 <section class="slide" data-anim="bom" data-notes="(3:35) Where the money goes in a humanoid. Actuators dominate — motors, gears, screws, magnets. Then hands and touch, compute, batteries. Treat the split as illustrative; estimates vary a lot.">
   <div class="kicker">Near future · Humanoids</div>
   <h2>Where the value hides</h2>
@@ -257,7 +292,7 @@ input[type=range]{accent-color:var(--amber);width:300px}
   <div class="foot">Illustrative split — published estimates vary widely</div>
 </section>
 
-<!-- 16 LAB -->
+<!-- 17 LAB -->
 <section class="slide" data-anim="lab" data-notes="(3:50) Autonomous labs. An Opentrons-style liquid handler, exploded: deck, modules, labware, pipettes, Z-head, gantry, HEPA. It's programmed in Python — which means an LLM can write the protocol. Collapse it to watch it pipette.">
   <div class="kicker">Near future · Autonomous labs</div>
   <h2>A lab robot, exploded</h2>
@@ -267,7 +302,7 @@ input[type=range]{accent-color:var(--amber);width:300px}
   <div class="panel" style="right:80px;top:600px;width:390px;height:190px"><div class="tag">same idea, bigger</div><p style="margin-top:12px"><span class="chip">Opentrons Flex</span><span class="chip">Hamilton STAR</span><span class="chip">Tecan Fluent</span><span class="chip">Beckman Biomek</span></p></div>
 </section>
 
-<!-- 17 LAB LOOP -->
+<!-- 18 LAB LOOP -->
 <section class="slide" data-anim="labloop" data-notes="(4:10) Close the loop: the model proposes, writes the protocol, robots run it, instruments measure, the model learns. The bitter lesson for science: more experiments, less intuition. Throughput is the new compute.">
   <div class="kicker">Near future · Self-driving science</div>
   <h2>The lab becomes a loop</h2>
@@ -275,7 +310,7 @@ input[type=range]{accent-color:var(--amber);width:300px}
   <div class="chips"><span class="chip">A-Lab (Berkeley)</span><span class="chip">Emerald Cloud Lab</span><span class="chip">Lila Sciences</span><span class="chip">Periodic Labs</span><span class="chip">Ginkgo</span></div>
 </section>
 
-<!-- 18 LAB STARTUPS -->
+<!-- 19 LAB STARTUPS -->
 <section class="slide" data-anim="labstartups" data-notes="(4:20) This is already happening. C5R built Facility-0 in 12 weeks: one model runs the instruments, the inventory, and even instructs the human operators. On their SciUniverse benchmark the best model completes only about 45% of real lab tasks — so lots of headroom. Periodic Labs and Lila raised hundreds of millions for AI scientists with robot labs; Medra, Automata and Trilobio build the robots; Emerald Cloud Lab and Tetsuwan turn experiments into code.">
   <div class="kicker">Near future · who's building it</div>
   <h2>Labs you can prompt</h2>
@@ -300,7 +335,7 @@ input[type=range]{accent-color:var(--amber);width:300px}
   <div class="foot">Images: company websites · C5R video via @c5rcorp / @donaldjewkes on X · funding as publicly reported</div>
 </section>
 
-<!-- 19 INVEST -->
+<!-- 20 INVEST -->
 <section class="slide" data-anim="invest" data-notes="(4:35) What to invest in. Rule: bet on whatever scales with compute; bet against hand-engineering. Picks and shovels: compute and energy, verifiers and RL environments, robot data, actuators, magnets, hands and touch, lab automation. Click a bubble.">
   <div class="kicker">What to bet on</div>
   <h2>Where compute meets atoms</h2>
@@ -312,7 +347,7 @@ input[type=range]{accent-color:var(--amber);width:300px}
   </div>
 </section>
 
-<!-- 19 CLOSE -->
+<!-- 21 CLOSE -->
 <section class="slide" data-anim="close" data-notes="(4:50) Words, then reasoning, then agents, then bodies, then science. Same lesson each time. Search plus learning. Scale it. Thank you.">
   <canvas class="full"></canvas>
   <div style="position:relative;z-index:2;margin-top:90px">
@@ -612,7 +647,22 @@ A.axes=(el,sig)=>{
   });
 };
 
-/* ---------------- 7 TIMELINE ---------------- */
+/* ---------------- EXCERPT ---------------- */
+A.excerpt=(el,sig)=>{
+  const lead=el.querySelector('.lead');
+  if(!lead.dataset.split){lead.dataset.split=1;
+    const wrap=n=>{if(n.nodeType===3){const f=document.createDocumentFragment();n.textContent.split(/(\s+)/).forEach(t=>{if(!t)return;if(/^\s+$/.test(t))f.append(t);else{const s=document.createElement('span');s.className='w';s.textContent=t;f.append(s)}});n.replaceWith(f)}else[...n.childNodes].forEach(wrap)};
+    [...lead.childNodes].forEach(wrap)}
+  const ws=[...lead.querySelectorAll('.w')],ms=[...lead.querySelectorAll('mark')],bs=[...el.querySelectorAll('.beat')],coda=el.querySelector('.coda');
+  [...ws,...ms,...bs,coda].forEach(n=>n.classList.remove('on'));
+  ws.forEach((w,i)=>later(sig,200+i*85,()=>w.classList.add('on')));
+  const t0=200+ws.length*85;
+  ms.forEach((m,i)=>later(sig,t0+200+i*500,()=>m.classList.add('on')));
+  bs.forEach((b,i)=>later(sig,t0+1200+i*650,()=>b.classList.add('on')));
+  later(sig,t0+1200+bs.length*650+400,()=>coda.classList.add('on'));
+};
+
+/* ---------------- 8 TIMELINE ---------------- */
 A.timeline=(el,sig)=>{
   const E=[
     ['2019','scale','The Bitter Lesson','Sutton: general methods + compute beat built-in human knowledge'],
