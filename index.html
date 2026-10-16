@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Bitter Lesson & Scaling Laws</title>
+<style>
+:root{--bg:#07080d;--fg:#e9ecf3;--dim:#7d8597;--amber:#ffb020;--cyan:#38d6ff;--pink:#ff4f8b;--green:#4ade80;--violet:#a78bfa;--panel:#10131c;--line:#252a3a}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#000;color:var(--fg);font-family:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;overflow:hidden}
+#stage{position:absolute;left:50%;top:50%;width:1600px;height:900px;background:radial-gradient(1200px 700px at 72% 18%,#131830 0%,var(--bg) 62%);overflow:hidden;transform-origin:center}
+.slide{position:absolute;inset:0;padding:54px 80px;opacity:0;visibility:hidden;transition:opacity .45s ease,visibility .45s}
+.slide.active{opacity:1;visibility:visible}
+.kicker{font:600 15px/1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);position:relative;z-index:2}
+h1{font-size:96px;line-height:.98;margin:18px 0 0;font-weight:850;letter-spacing:-.035em;position:relative;z-index:2}
+h2{font-size:56px;margin:12px 0 0;font-weight:800;letter-spacing:-.025em;position:relative;z-index:2}
+.sub{color:var(--dim);font-size:26px;margin-top:14px;position:relative;z-index:2}
+.grad{background:linear-gradient(90deg,var(--amber),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+canvas{display:block}
+.full{position:absolute;inset:0;width:100%;height:100%}
+.area{position:absolute;left:80px;right:80px;top:190px;bottom:70px}
+.chip{display:inline-block;padding:6px 14px;border:1px solid var(--line);border-radius:999px;font-size:16px;color:#cfd5e2;margin:6px 6px 0 0;background:#0e1119}
+.chips{position:absolute;left:80px;bottom:30px;z-index:3}
+.foot{position:absolute;right:80px;bottom:30px;font-size:13px;color:#59606f;z-index:3}
+.quote{font-size:26px;color:#c9cfdb;font-style:italic;position:relative;z-index:2;margin-top:10px}
+.quote b{font-style:normal;color:var(--amber)}
+.right{position:absolute;right:80px;top:64px;text-align:right;z-index:3}
+/* recap */
+.pipe{display:flex;gap:16px;margin-top:70px;height:360px}
+.stg{position:relative;flex:1;border:1px solid var(--line);border-radius:18px;background:#0f121b;padding:24px;overflow:hidden;transition:.4s;display:flex;flex-direction:column;justify-content:flex-end}
+.stg.big{flex:4.2}
+.stg b{font-size:30px;position:relative}
+.stg span{color:var(--dim);font-size:17px;position:relative;margin-top:6px}
+.stg em{position:absolute;top:18px;right:22px;font:800 46px ui-monospace,monospace;color:var(--amber);font-style:normal}
+.stg.lit{border-color:var(--amber);box-shadow:0 0 50px rgba(255,176,32,.25);transform:translateY(-6px)}
+.stg canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.55}
+.out{display:flex;gap:16px;margin-top:22px;font-size:22px;color:var(--dim)}
+.out div{flex:1;text-align:center}.out div:first-child{flex:4.2}
+/* cards */
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:22px;margin-top:70px}
+.card{height:380px;perspective:1400px;cursor:pointer}
+.card .in{position:relative;width:100%;height:100%;transition:transform .9s cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d}
+.card.flip .in{transform:rotateY(180deg)}
+.card .f,.card .b{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:20px;padding:28px;display:flex;flex-direction:column;justify-content:space-between;font-size:31px;font-weight:750;line-height:1.15}
+.card .f{background:#121624;border:1px solid var(--line);color:#cfd5e2}
+.card .b{background:linear-gradient(160deg,#ffb020,#ff4f8b);color:#14090c;transform:rotateY(180deg)}
+.card small{font:700 14px ui-monospace,monospace;letter-spacing:.18em;opacity:.7}
+.card i{font-style:normal;font-size:64px;opacity:.85}
+/* timeline */
+.tl{position:absolute;left:80px;right:80px;top:330px;height:4px;background:var(--line);border-radius:2px}
+.tl .prog{position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,var(--amber),var(--pink));width:0;border-radius:2px}
+.ev{position:absolute;top:-9px;width:22px;height:22px;margin-left:-11px;cursor:pointer;transform:scale(0);transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+.ev.on{transform:scale(1)}
+.ev .dot{width:22px;height:22px;border-radius:50%;border:4px solid var(--bg);box-shadow:0 0 0 2px currentColor;background:currentColor}
+.ev .lab{position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:16px;font-weight:650;color:#cfd5e2;text-align:center}
+.ev .lab small{display:block;font:600 12px ui-monospace,monospace;color:var(--dim);margin-top:2px}
+.ev.up .lab{bottom:34px}.ev.dn .lab{top:34px}
+.ev.up2 .lab{bottom:92px}.ev.dn2 .lab{top:92px}
+.ev .stem{position:absolute;left:10px;width:2px;background:var(--line)}
+.ev.sel .dot{box-shadow:0 0 0 2px currentColor,0 0 26px 6px currentColor}
+.ev.sel .lab{color:#fff}
+.yr{position:absolute;top:-58px;font:800 22px ui-monospace,monospace;color:#3a4152}
+.tlcard{position:absolute;left:80px;right:80px;bottom:60px;height:150px;border:1px solid var(--line);border-radius:18px;background:#0e1119;padding:26px 32px;display:flex;align-items:center;gap:30px}
+.tlcard .d{font:800 34px ui-monospace,monospace;min-width:150px}
+.tlcard .t{font-size:34px;font-weight:800}.tlcard .x{font-size:21px;color:#aab1c0;margin-top:6px}
+.legend{position:absolute;right:80px;top:70px;font-size:15px;color:var(--dim);z-index:3}
+.legend span{margin-left:18px}.legend span:before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;background:currentColor;margin-right:7px}
+/* terminal */
+.term{position:absolute;left:80px;top:200px;width:700px;height:560px;background:#0a0c12;border:1px solid var(--line);border-radius:14px;overflow:hidden;font:19px/1.6 ui-monospace,Menlo,Consolas,monospace}
+.term .bar{height:36px;background:#141824;display:flex;align-items:center;padding-left:14px;gap:8px}
+.term .bar i{width:12px;height:12px;border-radius:50%;background:#ff5f57}.term .bar i:nth-child(2){background:#febc2e}.term .bar i:nth-child(3){background:#28c840}
+.term pre{margin:0;padding:18px 22px;white-space:pre-wrap;color:#cfd5e2;font:inherit}
+.term .c{color:var(--amber)}.term .ok{color:var(--green)}.term .bad{color:var(--pink)}.term .ag{color:var(--cyan)}
+.cur{display:inline-block;width:10px;height:20px;background:var(--fg);vertical-align:-3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+/* side panels */
+.panel{position:absolute;background:#0e1119;border:1px solid var(--line);border-radius:18px;padding:26px;z-index:3}
+.panel h3{margin:0;font-size:30px}.panel p{color:#aab1c0;font-size:19px;line-height:1.45;margin:10px 0 0}
+.panel .tag{font:700 13px ui-monospace,monospace;letter-spacing:.15em;color:var(--amber);text-transform:uppercase}
+.tabs{position:absolute;z-index:4;display:flex;gap:8px}
+.tabs button,.btn{background:#121624;border:1px solid var(--line);color:#cfd5e2;padding:9px 16px;border-radius:10px;font-size:16px;cursor:pointer;font-family:inherit}
+.tabs button.on{background:var(--amber);color:#111;border-color:var(--amber);font-weight:700}
+.slider{position:absolute;z-index:4;display:flex;align-items:center;gap:14px;color:var(--dim);font-size:15px}
+input[type=range]{accent-color:var(--amber);width:300px}
+.big-stat{font:800 54px ui-monospace,monospace;color:var(--amber);white-space:nowrap}
+/* hud */
+#bar{position:fixed;left:0;bottom:0;height:4px;background:linear-gradient(90deg,var(--amber),var(--pink));width:0;transition:width .35s;z-index:9}
+#hud{position:fixed;right:14px;top:12px;z-index:9;display:flex;gap:6px;align-items:center;font:12px ui-monospace,monospace;color:#5a6172;opacity:.35;transition:opacity .3s}
+#hud:hover{opacity:1}
+#hud button{background:#141824;border:1px solid #2a3042;color:#cfd5e2;border-radius:6px;padding:4px 9px;cursor:pointer;font:inherit}
+#notes{position:fixed;left:0;right:0;bottom:4px;background:rgba(8,10,16,.96);padding:16px 26px;font-size:19px;line-height:1.5;display:none;border-top:1px solid #2a3042;z-index:8;color:#cfd5e2}
+#notes b{color:var(--amber)}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- 1 TITLE -->
+<section class="slide" data-anim="title" data-notes="(0:00) Three years ago Karpathy explained the State of GPT. Today: what happened next, told through one idea — the bitter lesson — and the scaling laws that make it predictable.">
+  <canvas class="full"></canvas>
+  <div style="position:relative;z-index:2;margin-top:110px">
+    <div class="kicker">State of GPT · 3 years later</div>
+    <h1>The <span class="grad">Bitter Lesson</span><br>& Scaling Laws</h1>
+    <div class="sub">How compute keeps winning — 2023 → 2026 → next</div>
+  </div>
+</section>
+
+<!-- 2 RECAP -->
+<section class="slide" data-anim="recap" data-notes="(0:15) Recap of 2023. Four stages. Pretraining is 99% of the compute; the rest is small finetuning. The output was a chat assistant.">
+  <div class="kicker">2023 · Recap</div>
+  <h2>How GPT was made</h2>
+  <div class="pipe">
+    <div class="stg big"><canvas></canvas><em>99%</em><b>Pretraining</b><span>internet text · 1000s GPUs · months</span></div>
+    <div class="stg"><b>SFT</b><span>~10k demos</span></div>
+    <div class="stg"><b>Reward model</b><span>rankings</span></div>
+    <div class="stg"><b>RL</b><span>from human feedback</span></div>
+  </div>
+  <div class="out"><div>→ base model</div><div>→ SFT model</div><div>→ scorer</div><div>→ ChatGPT</div></div>
+</section>
+
+<!-- 3 HINTS -->
+<section class="slide" data-anim="hints" data-notes="(0:30) The 2023 talk contained the seeds of everything that followed. Click each card: every hint became a product.">
+  <div class="kicker">2023 hints → 2026 reality</div>
+  <h2>The talk predicted its sequel</h2>
+  <div class="cards">
+    <div class="card"><div class="in"><div class="f"><small>2023</small><i>∴</i>"Tokens to think"</div><div class="b"><small>2026</small><i>◎</i>Reasoning models</div></div></div>
+    <div class="card"><div class="in"><div class="f"><small>2023</small><i>⌥</i>System 2 = prompt glue</div><div class="b"><small>2026</small><i>⟳</i>Test-time compute, built in</div></div></div>
+    <div class="card"><div class="in"><div class="f"><small>2023</small><i>●</i>"AlphaGo for text"</div><div class="b"><small>2026</small><i>✓</i>RL on verifiable rewards</div></div></div>
+    <div class="card"><div class="in"><div class="f"><small>2023</small><i>✗</i>AutoGPT: "not yet"</div><div class="b"><small>2026</small><i>›_</i>Agents ship code</div></div></div>
+    <div class="card"><div class="in"><div class="f"><small>2023</small><i>☐</i>Low-stakes copilots</div><div class="b"><small>2026</small><i>⚙</i>LLMs drive robots</div></div></div>
+  </div>
+</section>
+
+<!-- 4 BITTER LESSON -->
+<section class="slide" data-anim="bitter" data-notes="(0:45) Rich Sutton, 2019. Researchers keep building in human knowledge. It helps at first, then plateaus. General methods — search and learning — ride compute and overtake. Chess, Go, speech, vision, language… and now robots.">
+  <div class="kicker">Sutton · 2019</div>
+  <h2>The Bitter Lesson</h2>
+  <div class="quote">General methods that <b>leverage compute</b> win. Every time.</div>
+  <div class="area" style="top:230px"><canvas class="full"></canvas></div>
+</section>
+
+<!-- 5 SCALING LAWS -->
+<section class="slide" data-anim="scaling" data-notes="(1:00) Scaling laws turned the bitter lesson into engineering. Loss falls as a smooth power law in compute. Drag the slider: you can predict a model before you train it. Chinchilla added: about 20 tokens per parameter.">
+  <div class="kicker">Kaplan 2020 · Chinchilla 2022</div>
+  <h2>Scaling laws: compute → predictable</h2>
+  <div class="area" style="top:200px;bottom:90px"><canvas class="full"></canvas></div>
+  <div class="slider" style="left:80px;bottom:34px">Training compute <input type="range" min="180" max="260" value="230"><span class="val" style="color:var(--amber);font:700 18px ui-monospace,monospace"></span></div>
+  <div class="foot">loss ∝ C<sup>−0.05</sup> · ~20 tokens / parameter</div>
+</section>
+
+<!-- 6 THREE AXES -->
+<section class="slide" data-anim="axes" data-notes="(1:15) The big change since 2023: there is not one scaling law, there are three. Pretraining, RL post-training, and thinking time at inference. Each is a new way to turn compute into intelligence.">
+  <div class="kicker">2020 → 2024</div>
+  <h2>One law became three</h2>
+  <div class="area" style="top:210px"><canvas class="full"></canvas></div>
+</section>
+
+<!-- 7 TIMELINE -->
+<section class="slide" data-anim="timeline" data-notes="(1:30) The chronology. Hover any dot. Notice the colors shift from scaling, to reasoning, to agents, to robots.">
+  <div class="kicker">Chronology</div>
+  <h2>2019 → 2026</h2>
+  <div class="legend"><span style="color:var(--amber)">scaling</span><span style="color:var(--cyan)">reasoning</span><span style="color:var(--green)">agents</span><span style="color:var(--pink)">robots</span></div>
+  <div class="tl"><div class="prog"></div></div>
+  <div class="tlcard"><div class="d"></div><div><div class="t"></div><div class="x"></div></div></div>
+</section>
+
+<!-- 8 TEST TIME COMPUTE -->
+<section class="slide" data-anim="ttc" data-notes="(1:45) Karpathy said: transformers need tokens to think. In 2024 o1 made that native. The model explores, scores and prunes its own reasoning — Tree of Thought, but learned. More thinking tokens, higher accuracy, log-linear.">
+  <div class="kicker">2024 · o1 → R1 → thinking models</div>
+  <h2>Test-time compute</h2>
+  <div class="quote">"Transformers need <b>tokens to think</b>." — Karpathy, 2023</div>
+  <div class="area" style="top:250px"><canvas class="full"></canvas></div>
+</section>
+
+<!-- 9 RLVR -->
+<section class="slide" data-anim="rlvr" data-notes="(2:00) RLVR: reinforcement learning with verifiable rewards. Sample many answers, check them automatically — unit tests, math checkers — reinforce the winners. No human labels. Anything with a checker becomes trainable. This is the AlphaGo-for-text he hinted at.">
+  <div class="kicker">2024–25 · Tülu 3 · DeepSeek-R1</div>
+  <h2>RLVR: just add a checker</h2>
+  <div class="area" style="top:200px"><canvas class="full"></canvas></div>
+</section>
+
+<!-- 10 AGENTIC CODING -->
+<section class="slide" data-anim="agent" data-notes="(2:15) Agentic coding. The loop: read, plan, edit, run tests, fix. Code is the perfect RLVR domain because tests are verifiers. METR measures task length agents can finish: it doubles roughly every 7 months.">
+  <div class="kicker">2025 · Claude Code · Codex · Cursor</div>
+  <h2>Agentic coding</h2>
+  <div class="term"><div class="bar"><i></i><i></i><i></i></div><pre></pre></div>
+  <div style="position:absolute;left:830px;right:80px;top:200px;height:560px"><canvas class="full"></canvas></div>
+  <div class="foot">Task horizon at 50% success — approximate, after METR (2025)</div>
+</section>
+
+<!-- 11 VLA -->
+<section class="slide" data-anim="vla" data-notes="(2:30) Same recipe, new output. Vision-language-action models: pixels and words in, motor actions out. RT-2 in 2023, then pi-zero, Helix, GR00T, Gemini Robotics.">
+  <div class="kicker">2023 → 2025 · Vision-Language-Action</div>
+  <h2>Tokens → torques</h2>
+  <div class="area" style="top:190px;bottom:90px"><canvas class="full"></canvas></div>
+  <div class="chips"><span class="chip">RT-2</span><span class="chip">OpenVLA</span><span class="chip">π0 / π0.5</span><span class="chip">Figure Helix</span><span class="chip">GR00T N1</span><span class="chip">Gemini Robotics</span></div>
+</section>
+
+<!-- 12 EMBODIED -->
+<section class="slide" data-anim="embodied" data-notes="(2:45) Karpathy's System 1 / System 2 slide, now with a body. A slow LLM agent plans at about one step per second. A fast VLA policy turns each step into motor commands hundreds of times per second.">
+  <div class="kicker">2025 · Embodied agents</div>
+  <h2>System 2 plans. System 1 moves.</h2>
+  <div class="area" style="top:190px"><canvas class="full"></canvas></div>
+</section>
+
+<!-- 13 MIND MAP -->
+<section class="slide" data-anim="mindmap" data-notes="(3:00) One idea, five branches. Compute flows out from the center. Drag the nodes around.">
+  <div class="kicker">The pattern</div>
+  <h2>Bitter lesson, everywhere</h2>
+  <div class="area" style="top:170px;bottom:30px"><canvas class="full"></canvas></div>
+</section>
+
+<!-- 14 ACTUATOR -->
+<section class="slide" data-anim="actuator" data-notes="(3:15) Next: atoms. The humanoid's core part is the actuator — a robot has 30 to 50 of them. Exploded: driver board, encoder, brake, stator, magnet rotor, strain-wave gear, cross-roller bearing, torque sensor. Switch to the linear version, the planetary roller screw. Hover any part.">
+  <div class="kicker">Near future · Humanoids</div>
+  <h2>Inside a joint actuator</h2>
+  <div class="tabs" style="left:80px;top:182px"><button class="on" data-k="rot">Rotary · strain-wave</button><button data-k="lin">Linear · roller screw</button></div>
+  <div style="position:absolute;left:40px;top:230px;width:1080px;height:560px"><canvas class="full"></canvas></div>
+  <div class="slider" style="left:80px;bottom:34px">Explode <input type="range" min="0" max="100" value="100"> <button class="btn auto">Auto</button></div>
+  <div class="panel" style="right:80px;top:200px;width:390px;height:400px"><div class="tag">part</div><h3></h3><p></p></div>
+  <div class="panel" style="right:80px;top:620px;width:390px;height:170px;display:flex;align-items:center;gap:20px"><div class="big-stat">30–50</div><p style="margin:0">actuators per humanoid — the robot's real bill of materials</p></div>
+</section>
+
+<!-- 15 BOM -->
+<section class="slide" data-anim="bom" data-notes="(3:35) Where the money goes in a humanoid. Actuators dominate — motors, gears, screws, magnets. Then hands and touch, compute, batteries. Treat the split as illustrative; estimates vary a lot.">
+  <div class="kicker">Near future · Humanoids</div>
+  <h2>Where the value hides</h2>
+  <div class="area" style="top:180px;bottom:40px"><canvas class="full"></canvas></div>
+  <div class="foot">Illustrative split — published estimates vary widely</div>
+</section>
+
+<!-- 16 LAB -->
+<section class="slide" data-anim="lab" data-notes="(3:50) Autonomous labs. An Opentrons-style liquid handler, exploded: deck, modules, labware, pipettes, Z-head, gantry, HEPA. It's programmed in Python — which means an LLM can write the protocol. Collapse it to watch it pipette.">
+  <div class="kicker">Near future · Autonomous labs</div>
+  <h2>A lab robot, exploded</h2>
+  <div style="position:absolute;left:40px;top:180px;width:1080px;height:640px"><canvas class="full"></canvas></div>
+  <div class="slider" style="left:80px;bottom:34px">Explode <input type="range" min="0" max="100" value="100"> <button class="btn auto">Auto</button></div>
+  <div class="panel" style="right:80px;top:200px;width:390px;height:380px"><div class="tag">part</div><h3></h3><p></p></div>
+  <div class="panel" style="right:80px;top:600px;width:390px;height:190px"><div class="tag">same idea, bigger</div><p style="margin-top:12px"><span class="chip">Opentrons Flex</span><span class="chip">Hamilton STAR</span><span class="chip">Tecan Fluent</span><span class="chip">Beckman Biomek</span></p></div>
+</section>
+
+<!-- 17 LAB LOOP -->
+<section class="slide" data-anim="labloop" data-notes="(4:10) Close the loop: the model proposes, writes the protocol, robots run it, instruments measure, the model learns. The bitter lesson for science: more experiments, less intuition. Throughput is the new compute.">
+  <div class="kicker">Near future · Self-driving science</div>
+  <h2>The lab becomes a loop</h2>
+  <div class="area" style="top:180px;bottom:80px"><canvas class="full"></canvas></div>
+  <div class="chips"><span class="chip">A-Lab (Berkeley)</span><span class="chip">Emerald Cloud Lab</span><span class="chip">Lila Sciences</span><span class="chip">Periodic Labs</span><span class="chip">Ginkgo</span></div>
+</section>
+
+<!-- 18 INVEST -->
+<section class="slide" data-anim="invest" data-notes="(4:25) What to invest in. Rule: bet on whatever scales with compute; bet against hand-engineering. Picks and shovels: compute and energy, verifiers and RL environments, robot data, actuators, magnets, hands and touch, lab automation. Click a bubble.">
+  <div class="kicker">What to bet on</div>
+  <h2>Where compute meets atoms</h2>
+  <div style="position:absolute;left:40px;top:170px;width:1060px;height:700px"><canvas class="full"></canvas></div>
+  <div class="panel" style="right:80px;top:200px;width:420px;height:300px"><div class="tag">bet</div><h3></h3><p></p></div>
+  <div class="panel" style="right:80px;top:520px;width:420px;height:270px">
+    <div class="tag" style="color:var(--green)">bet on</div><p style="font-size:22px;color:#fff;margin-bottom:18px">what scales with compute</p>
+    <div class="tag" style="color:var(--pink)">bet against</div><p style="font-size:22px;color:#fff">what needs hand-engineering</p>
+  </div>
+</section>
+
+<!-- 19 CLOSE -->
+<section class="slide" data-anim="close" data-notes="(4:45) Words, then reasoning, then agents, then bodies, then science. Same lesson each time. Search plus learning. Scale it. Thank you.">
+  <canvas class="full"></canvas>
+  <div style="position:relative;z-index:2;margin-top:90px">
+    <div class="kicker">The lesson, again</div>
+    <h1>Search + learning.<br><span class="grad">Scale it.</span></h1>
+    <div class="sub">Thank you</div>
+  </div>
+</section>
+
+</div>
+<div id="bar"></div>
+<div id="notes"></div>
+<div id="hud"><button id="prev">‹</button><span id="count"></span><button id="next">›</button><button id="nbtn">notes</button><button id="fbtn">⛶</button></div>
+
+<script>
+const stage=document.getElementById('stage');
+const slides=[...document.querySelectorAll('.slide')];
+let S=1,cur=0,ctrl=null;
+const A={};
+
+function fit(){S=Math.min(innerWidth/1600,innerHeight/900);stage.style.transform=`translate(-50%,-50%) scale(${S})`}
+function cv(el){const w=el.clientWidth,h=el.clientHeight,d=(devicePixelRatio||1)*S;el.width=Math.max(1,Math.round(w*d));el.height=Math.max(1,Math.round(h*d));const c=el.getContext('2d');c.setTransform(d,0,0,d,0,0);return{c,w,h}}
+function mpos(el,e){const r=el.getBoundingClientRect();return{x:(e.clientX-r.left)*el.clientWidth/r.width,y:(e.clientY-r.top)*el.clientHeight/r.height}}
+function run(sig,fn){const t0=performance.now();let last=t0;const f=t=>{if(sig.aborted)return;fn((t-t0)/1000,Math.min(.05,(t-last)/1000));last=t;requestAnimationFrame(f)};requestAnimationFrame(f)}
+function every(sig,ms,fn){const id=setInterval(fn,ms);sig.addEventListener('abort',()=>clearInterval(id))}
+function later(sig,ms,fn){const id=setTimeout(fn,ms);sig.addEventListener('abort',()=>clearTimeout(id))}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t,ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+function shade(hex,f){const n=parseInt(hex.slice(1),16);const m=v=>Math.round(clamp(f>1?v+(255-v)*(f-1):v*f,0,255));return`rgb(${m(n>>16)},${m(n>>8&255)},${m(n&255)})`}
+function rgba(hex,a){const n=parseInt(hex.slice(1),16);return`rgba(${n>>16},${n>>8&255},${n&255},${a})`}
+function T(c,s,x,y,o={}){c.font=`${o.w||500} ${o.s||16}px ${o.mono?'ui-monospace,Menlo,Consolas,monospace':'Inter,Segoe UI,system-ui,sans-serif'}`;c.fillStyle=o.c||'#e9ecf3';c.textAlign=o.a||'left';c.textBaseline=o.b||'middle';c.fillText(s,x,y)}
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+function arrow(c,x1,y1,x2,y2,col,lw=2){c.strokeStyle=col;c.fillStyle=col;c.lineWidth=lw;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();const a=Math.atan2(y2-y1,x2-x1);c.beginPath();c.moveTo(x2,y2);c.lineTo(x2-10*Math.cos(a-.4),y2-10*Math.sin(a-.4));c.lineTo(x2-10*Math.cos(a+.4),y2-10*Math.sin(a+.4));c.fill()}
+const C={amber:'#ffb020',cyan:'#38d6ff',pink:'#ff4f8b',green:'#4ade80',violet:'#a78bfa',dim:'#7d8597',line:'#252a3a',fg:'#e9ecf3'};
+
+function go(i){
+  i=clamp(i,0,slides.length-1);
+  if(ctrl)ctrl.abort();
+  slides[cur].classList.remove('active');
+  cur=i;const el=slides[cur];el.classList.add('active');
+  ctrl=new AbortController();
+  const fn=A[el.dataset.anim];if(fn)fn(el,ctrl.signal);
+  document.getElementById('bar').style.width=((cur+1)/slides.length*100)+'%';
+  document.getElementById('count').textContent=`${cur+1} / ${slides.length}`;
+  document.getElementById('notes').innerHTML=`<b>${cur+1}.</b> ${el.dataset.notes||''}`;
+  history.replaceState(null,'','#'+(cur+1));
+}
+
+/* ---------------- 1 TITLE ---------------- */
+A.title=(el,sig)=>{
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
+  const K=4.2,f=u=>[w*.04+u*w*.92,h*.95-(Math.exp(u*K)-1)/(Math.exp(K)-1)*h*.86];
+  const P=[...Array(260)].map(()=>({u:Math.random(),s:.02+Math.random()*.06,o:(Math.random()-.5)*60,r:Math.random()*1.8+.6}));
+  const labels=[[.12,'GPT-2'],[.38,'GPT-3'],[.58,'GPT-4'],[.74,'reasoning'],[.86,'agents'],[.95,'robots']];
+  run(sig,(t,dt)=>{
+    c.clearRect(0,0,w,h);
+    c.strokeStyle='rgba(255,255,255,.035)';c.lineWidth=1;
+    for(let x=0;x<w;x+=50){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke()}
+    for(let y=0;y<h;y+=50){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke()}
+    c.beginPath();for(let u=0;u<=1.0001;u+=.004){const[x,y]=f(u);u?c.lineTo(x,y):c.moveTo(x,y)}
+    c.strokeStyle='rgba(255,176,32,.5)';c.lineWidth=2.5;c.stroke();
+    c.save();c.globalCompositeOperation='lighter';
+    for(const p of P){p.u+=p.s*dt*(.4+p.u*1.5);if(p.u>1){p.u=0;p.o=(Math.random()-.5)*60}
+      const[x,y]=f(p.u);const g=150+p.u*90|0;c.fillStyle=`rgba(255,${g},${60+p.u*80|0},${.15+.75*p.u})`;
+      c.beginPath();c.arc(x,y+p.o*(1-p.u),p.r*(1+p.u*1.8),0,7);c.fill()}
+    c.restore();
+    labels.forEach(([u,s],i)=>{const a=clamp((t-.5-i*.35)*2,0,1);if(!a)return;const[x,y]=f(u);
+      c.globalAlpha=a;c.fillStyle=C.amber;c.beginPath();c.arc(x,y,5,0,7);c.fill();
+      T(c,s,x-10,y-18,{s:15,c:'#cfd5e2',a:'right',w:600,mono:1});c.globalAlpha=1});
+  });
+};
+
+/* ---------------- 2 RECAP ---------------- */
+A.recap=(el,sig)=>{
+  const stg=[...el.querySelectorAll('.stg')];const cvs=el.querySelector('.stg canvas');const{c,w,h}=cv(cvs);
+  const cols=[...Array(Math.floor(w/26))].map(()=>({y:Math.random()*h,s:40+Math.random()*120}));
+  let k=0;stg.forEach(s=>s.classList.remove('lit'));stg[0].classList.add('lit');
+  every(sig,1100,()=>{stg.forEach(s=>s.classList.remove('lit'));k=(k+1)%4;stg[k].classList.add('lit')});
+  run(sig,(t,dt)=>{c.fillStyle='rgba(15,18,27,.25)';c.fillRect(0,0,w,h);
+    cols.forEach((o,i)=>{o.y+=o.s*dt;if(o.y>h+20){o.y=-20;o.s=40+Math.random()*120}
+      T(c,String(Math.random()*50257|0),i*26+4,o.y,{s:11,c:'rgba(255,176,32,.8)',mono:1})})});
+};
+
+/* ---------------- 3 HINTS ---------------- */
+A.hints=(el,sig)=>{
+  const cards=[...el.querySelectorAll('.card')];cards.forEach(c=>c.classList.remove('flip'));
+  cards.forEach((cd,i)=>{later(sig,900+i*700,()=>cd.classList.add('flip'));cd.onclick=()=>cd.classList.toggle('flip')});
+};
+
+/* ---------------- 4 BITTER ---------------- */
+A.bitter=(el,sig)=>{
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
+  const dom=['Chess · Deep Blue 1997','Go · AlphaGo 2016','Vision · AlexNet 2012','Speech · 2010s','Language · GPT 2020','Reasoning · o1 2024','Robots · VLAs 2025 →'];
+  const L=70,R=w-40,Tp=20,B=h-60;
+  const hum=x=>.06+.42*(1-Math.exp(-7*x)),cmp=x=>.02+.011*(Math.exp(4.5*x)-1);
+  const X=x=>L+x*(R-L),Y=v=>B-clamp(v,0,1.05)*(B-Tp);
+  let cx=0;for(let x=.2;x<1;x+=.001)if(cmp(x)>hum(x)){cx=x;break}
+  run(sig,t=>{
+    const per=7,cyc=Math.floor(t/per),p=clamp((t%per)/5,0,1);
+    c.clearRect(0,0,w,h);
+    c.strokeStyle=C.line;c.lineWidth=2;c.beginPath();c.moveTo(L,Tp);c.lineTo(L,B);c.lineTo(R,B);c.stroke();
+    T(c,'↑ performance',L+10,Tp+10,{s:16,c:C.dim});T(c,'compute  →',R,B+28,{s:16,c:C.dim,a:'right'});
+    const draw=(fn,col,lw,glow)=>{c.beginPath();for(let x=0;x<=p;x+=.004){x?c.lineTo(X(x),Y(fn(x))):c.moveTo(X(x),Y(fn(x)))}
+      c.strokeStyle=col;c.lineWidth=lw;c.shadowColor=col;c.shadowBlur=glow;c.stroke();c.shadowBlur=0};
+    draw(hum,'#8b93a6',4,0);draw(cmp,C.amber,5,18);
+    const hp=Math.min(p,1);
+    T(c,'human knowledge',X(Math.min(hp,.55))+10,Y(hum(Math.min(hp,.55)))-24,{s:20,c:'#aab1c0',w:600});
+    if(p>.5)T(c,'search + learning',X(p)-20,Y(cmp(p))+4,{s:22,c:C.amber,w:800,a:'right'});
+    if(p>=cx){const a=clamp((p-cx)*8,0,1),r=10+30*(1-a);c.strokeStyle=rgba(C.pink,1-a*.6);c.lineWidth=3;c.beginPath();c.arc(X(cx),Y(cmp(cx)),r,0,7);c.stroke();
+      c.fillStyle=C.pink;c.beginPath();c.arc(X(cx),Y(cmp(cx)),6,0,7);c.fill()}
+    const d=dom[cyc%dom.length];c.globalAlpha=clamp((t%per)*2,0,1)*clamp((per-t%per)*2,0,1);
+    T(c,d,L+30,Tp+70,{s:40,w:800,c:'#fff'});c.globalAlpha=1;
+  });
+};
+
+/* ---------------- 5 SCALING ---------------- */
+A.scaling=(el,sig)=>{
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);const sl=el.querySelector('input'),val=el.querySelector('.val');
+  const Lf=x=>Math.pow(Math.pow(10,x)/8.64e19/2.3e8,-.05);
+  const x0=18,x1=26.2,y0=Math.log10(1.15),y1=Math.log10(4.6);
+  const L=80,R=w-30,Tp=10,B=h-50,X=x=>L+(x-x0)/(x1-x0)*(R-L),Y=l=>B-(Math.log10(l)-y0)/(y1-y0)*(B-Tp);
+  const ks=[19,20.3,21.6,22.9,24.2,25.5];
+  const curve=(k,x)=>{const xs=k-2.2,ls=Math.log10(Lf(xs)*1.45),lp=Math.log10(Lf(k)*1.03);return Math.pow(10,lp+(ls-lp)*Math.exp(-(x-xs)*1.9))};
+  const marks=[[21.2,'GPT-2'],[23.5,'GPT-3'],[25.3,'GPT-4 (est.)']];
+  let user=false;sl.oninput=()=>user=true;
+  run(sig,t=>{
+    c.clearRect(0,0,w,h);
+    c.strokeStyle=C.line;c.lineWidth=1;
+    for(let x=18;x<=26;x++){c.beginPath();c.moveTo(X(x),Tp);c.lineTo(X(x),B);c.stroke();T(c,`10^${x}`,X(x),B+20,{s:13,c:C.dim,a:'center',mono:1})}
+    [1.5,2,3,4].forEach(l=>{c.beginPath();c.moveTo(L,Y(l));c.lineTo(R,Y(l));c.stroke();T(c,l.toFixed(1),L-10,Y(l),{s:13,c:C.dim,a:'right',mono:1})});
+    T(c,'training FLOPs (log)',R,B+42,{s:14,c:C.dim,a:'right'});T(c,'loss',L-10,Tp+6,{s:14,c:C.dim,a:'right'});
+    ks.forEach((k,i)=>{const p=clamp((t-.3-i*.35)/1.2,0,1);if(!p)return;const xs=k-2.2,xe=Math.min(x1,xs+(4.4)*p);
+      c.beginPath();for(let x=xs;x<=xe;x+=.02){const y=Y(curve(k,x));x===xs?c.moveTo(X(x),y):c.lineTo(X(x),y)}
+      c.strokeStyle=`hsla(${200+i*14},90%,${55+i*4}%,.75)`;c.lineWidth=2;c.stroke()});
+    const fp=clamp((t-2.6)/1.5,0,1);
+    if(fp){c.setLineDash([10,8]);c.beginPath();for(let x=x0;x<=x0+(x1-x0)*fp;x+=.05){x===x0?c.moveTo(X(x),Y(Lf(x))):c.lineTo(X(x),Y(Lf(x)))}
+      c.strokeStyle=C.amber;c.lineWidth=3.5;c.shadowColor=C.amber;c.shadowBlur=14;c.stroke();c.shadowBlur=0;c.setLineDash([]);
+      if(fp>=1)T(c,'compute-optimal frontier',X(19.2),Y(Lf(19.2))-34,{s:20,c:C.amber,w:700})}
+    marks.forEach(([x,s])=>{c.fillStyle='#aab1c0';c.beginPath();c.moveTo(X(x),B);c.lineTo(X(x)-6,B-10);c.lineTo(X(x)+6,B-10);c.fill();T(c,s,X(x),B-20,{s:14,c:'#aab1c0',a:'center',w:600})});
+    if(!user)sl.value=Math.round(200+50*(.5-.5*Math.cos(t*.6)));
+    const xv=sl.value/10,lv=Lf(xv);val.textContent=`10^${xv.toFixed(1)} FLOPs → loss ${lv.toFixed(2)}`;
+    if(fp>=1){c.fillStyle='#fff';c.shadowColor='#fff';c.shadowBlur=20;c.beginPath();c.arc(X(xv),Y(lv),9,0,7);c.fill();c.shadowBlur=0;
+      c.setLineDash([4,4]);c.strokeStyle='rgba(255,255,255,.4)';c.beginPath();c.moveTo(X(xv),Y(lv));c.lineTo(X(xv),B);c.moveTo(X(xv),Y(lv));c.lineTo(L,Y(lv));c.stroke();c.setLineDash([])}
+  });
+};
+
+/* ---------------- 6 AXES ---------------- */
+A.axes=(el,sig)=>{
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
+  const P=[{n:'Pretraining',y:'2020',x:'train compute (log)',col:C.amber},{n:'RL post-training',y:'2024',x:'RL compute (log)',col:C.green},{n:'Test-time thinking',y:'2024',x:'thinking tokens (log)',col:C.cyan}];
+  const gap=40,pw=(w-gap*2)/3;
+  run(sig,t=>{c.clearRect(0,0,w,h);
+    P.forEach((p,i)=>{const ox=i*(pw+gap),L=ox+30,R=ox+pw-20,Tp=110,B=h-110;const a=clamp((t-i*1.1)/1.6,0,1);
+      rr(c,ox,0,pw,h-50,20);c.fillStyle='#0e1119';c.fill();c.strokeStyle=a>0?rgba(p.col,.5):C.line;c.lineWidth=1.5;c.stroke();
+      T(c,String(i+1),ox+28,48,{s:44,w:800,c:p.col,mono:1});T(c,p.n,ox+78,40,{s:26,w:750});T(c,p.y,ox+78,70,{s:15,c:C.dim,mono:1});
+      c.strokeStyle=C.line;c.lineWidth=2;c.beginPath();c.moveTo(L,Tp);c.lineTo(L,B);c.lineTo(R,B);c.stroke();
+      T(c,p.x,R,B+26,{s:15,c:C.dim,a:'right'});T(c,'capability',L+8,Tp-14,{s:15,c:C.dim});
+      if(!a)return;const f=u=>B-(B-Tp)*(.08+.82*u);
+      c.beginPath();for(let u=0;u<=a;u+=.01){const x=L+u*(R-L),y=f(u);u?c.lineTo(x,y):c.moveTo(x,y)}
+      c.strokeStyle=p.col;c.lineWidth=4;c.shadowColor=p.col;c.shadowBlur=16;c.stroke();c.shadowBlur=0;
+      for(let k=0;k<6;k++){const u=((t*.25+k/6)%1)*a;c.fillStyle=p.col;c.globalAlpha=.8;c.beginPath();c.arc(L+u*(R-L),f(u),4,0,7);c.fill();c.globalAlpha=1}
+    });
+    if(t>3.6){c.globalAlpha=clamp(t-3.6,0,1);T(c,'each axis: a new way to spend compute',w/2,h-14,{s:22,c:'#cfd5e2',a:'center',w:600});c.globalAlpha=1}
+  });
+};
+
+/* ---------------- 7 TIMELINE ---------------- */
+A.timeline=(el,sig)=>{
+  const E=[
+    ['2019','scale','The Bitter Lesson','Sutton: general methods + compute beat built-in human knowledge'],
+    ['2020','scale','Scaling laws','Kaplan et al.: loss is a power law in compute, data, parameters'],
+    ['2020','scale','GPT-3','175B parameters — few-shot prompting emerges'],
+    ['2022','scale','Chinchilla','~20 tokens per parameter: train longer, not just bigger'],
+    ['2022','agent','ChatGPT','The RLHF assistant goes mainstream'],
+    ['2023','scale','GPT-4','The strongest assistant of 2023'],
+    ['2023','reason','State of GPT','Karpathy: "tokens to think", System 2 via prompts'],
+    ['2023','robot','RT-2','First vision-language-action model: web knowledge → robot actions'],
+    ['2024','agent','SWE-agents','Agents begin resolving real GitHub issues'],
+    ['2024','reason','o1','Test-time compute: think longer, score higher'],
+    ['2024','robot','π0','One generalist policy across many robot bodies'],
+    ['2024','reason','RLVR named','Tülu 3: reinforcement learning with verifiable rewards'],
+    ['2025','reason','DeepSeek-R1','Open model: reasoning emerges from verifiable reward alone'],
+    ['2025','robot','Figure Helix','Humanoid: slow VLM "System 2" + fast policy "System 1"'],
+    ['2025','agent','Claude Code','Agentic coding in the terminal'],
+    ['2025','robot','GR00T · Gemini Robotics','Open humanoid foundation model · Gemini-based VLA'],
+    ['2025','agent','METR horizons','Agent task length doubling roughly every 7 months'],
+    ['2025','reason','IMO gold','LLMs reach gold-medal level at the Math Olympiad'],
+    ['2025','robot','Gemini Robotics 1.5','Embodied reasoning agent orchestrating a VLA'],
+    ['2026','now','Today','Agents ship code · humanoid pilots · self-driving labs']];
+  const col={scale:C.amber,reason:C.cyan,agent:C.green,robot:C.pink,now:'#ffffff'};
+  const tl=el.querySelector('.tl'),prog=tl.querySelector('.prog'),card=el.querySelector('.tlcard');
+  tl.querySelectorAll('.ev,.yr').forEach(n=>n.remove());
+  const cls=['up','dn','up2','dn2'];let lastY='';
+  const evs=E.map((e,i)=>{const d=document.createElement('div');d.className='ev '+cls[i%4];d.style.left=(i/(E.length-1)*100)+'%';d.style.color=col[e[1]];
+    const tall=i%4>1,stemH=tall?82:26;
+    d.innerHTML=`<div class="stem" style="${i%2?'top':'bottom'}:22px;height:${stemH-12}px"></div><div class="dot"></div><div class="lab">${e[2]}<small>${e[0]}</small></div>`;
+    tl.appendChild(d);
+    if(e[0]!==lastY){const y=document.createElement('div');y.className='yr';y.style.left=`calc(${i/(E.length-1)*100}% - 26px)`;y.style.top='150px';y.textContent=e[0];tl.appendChild(y);lastY=e[0]}
+    d.onmouseenter=d.onclick=()=>{auto=false;sel(i)};return d});
+  let auto=true,si=-1;
+  function sel(i){si=i;evs.forEach(e=>e.classList.remove('sel'));evs[i].classList.add('sel');const e=E[i];
+    card.querySelector('.d').textContent=e[0];card.querySelector('.d').style.color=col[e[1]];card.querySelector('.t').textContent=e[2];card.querySelector('.x').textContent=e[3]}
+  prog.style.transition='none';prog.style.width='0';
+  requestAnimationFrame(()=>{prog.style.transition='width 4s linear';prog.style.width='100%'});
+  evs.forEach((e,i)=>later(sig,i*4000/E.length,()=>{e.classList.add('on');if(auto)sel(i)}));
+  later(sig,4300,()=>every(sig,1800,()=>{if(auto)sel((si+1)%E.length)}));
+};
+
+/* ---------------- 8 TTC ---------------- */
+A.ttc=(el,sig)=>{
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
+  const D=5;let tree,cyc=-1;
+  function build(){const L=[[{y:.5,p:null,keep:true}]];for(let d=1;d<=D;d++){const prev=L[d-1].filter(n=>n.keep),lvl=[];
+      prev.forEach(pn=>{for(let i=0;i<3;i++)lvl.push({p:pn,s:Math.random(),keep:false})});lvl.forEach((n,i)=>n.y=(i+.5)/lvl.length);
+      [...lvl].sort((a,b)=>b.s-a.s).slice(0,d<D?2:1).forEach(n=>n.keep=true);L.push(lvl)}return L}
+  const TW=w*.56,X=d=>50+d*(TW-100)/D,Y=y=>20+y*(h-60);
+  const CL=TW+80,CR=w-20,CT=20,CB=h-60;
+  run(sig,t=>{const per=9,k=Math.floor(t/per),lt=t%per;if(k!==cyc){cyc=k;tree=build()}
+    c.clearRect(0,0,w,h);
+    for(let d=1;d<=D;d++){const ap=clamp(lt-d*1.0,0,1),sp=lt-d*1.0-.55;if(!ap)continue;
+      tree[d].forEach(n=>{const px=X(d-1),py=Y(n.p.y),x=lerp(px,X(d),ease(ap)),y=lerp(py,Y(n.y),ease(ap));
+        const pruned=sp>0&&!n.keep,colr=pruned?rgba(C.pink,.25):(sp>0?C.cyan:'#aab1c0');
+        c.strokeStyle=pruned?rgba(C.pink,.18):rgba(C.cyan,.55);c.lineWidth=pruned?1.2:2.2;
+        c.beginPath();c.moveTo(px,py);c.bezierCurveTo((px+x)/2,py,(px+x)/2,y,x,y);c.stroke();
+        c.fillStyle=colr;c.beginPath();c.arc(x,y,pruned?5:8,0,7);c.fill();
+        if(pruned&&sp<.6){c.globalAlpha=1-sp/.6;T(c,'✗',x+10,y,{s:16,c:C.pink,w:800});c.globalAlpha=1}})}
+    c.fillStyle='#fff';c.beginPath();c.arc(X(0),Y(.5),10,0,7);c.fill();T(c,'Q',X(0),Y(.5)+28,{s:16,c:C.dim,a:'center',mono:1});
+    if(lt>D+.8){const n=tree[D].find(n=>n.keep),x=X(D),y=Y(n.y),a=clamp((lt-D-.8)*2,0,1);
+      let m=n;c.strokeStyle=C.amber;c.lineWidth=4;c.shadowColor=C.amber;c.shadowBlur=16;c.beginPath();c.moveTo(x,y);
+      for(let d=D-1;d>=0;d--){m=m.p;c.lineTo(X(d),Y(m.y))}c.globalAlpha=a;c.stroke();c.shadowBlur=0;
+      c.fillStyle=C.amber;c.beginPath();c.arc(x,y,12+4*Math.sin(t*6),0,7);c.fill();T(c,'✓ answer',x-18,y-30,{s:20,c:C.amber,w:800});c.globalAlpha=1}
+    T(c,'explore · score · prune',50,h-14,{s:17,c:C.dim});
+    c.strokeStyle=C.line;c.lineWidth=2;c.beginPath();c.moveTo(CL,CT);c.lineTo(CL,CB);c.lineTo(CR,CB);c.stroke();
+    T(c,'thinking tokens (log) →',CR,CB+26,{s:15,c:C.dim,a:'right'});T(c,'accuracy',CL+10,CT+4,{s:15,c:C.dim});
+    const f=u=>CB-(CB-CT)*(.1+.8/(1+Math.exp(-(u-.45)*7)));
+    c.beginPath();for(let u=0;u<=1;u+=.01){u?c.lineTo(CL+u*(CR-CL),f(u)):c.moveTo(CL,f(0))}c.strokeStyle=rgba(C.cyan,.35);c.lineWidth=3;c.stroke();
+    const u=clamp(lt/(D+1.5),0,1);c.beginPath();for(let v=0;v<=u;v+=.01){v?c.lineTo(CL+v*(CR-CL),f(v)):c.moveTo(CL,f(0))}c.strokeStyle=C.cyan;c.lineWidth=4;c.shadowColor=C.cyan;c.shadowBlur=14;c.stroke();c.shadowBlur=0;
+    c.fillStyle='#fff';c.beginPath();c.arc(CL+u*(CR-CL),f(u),8,0,7);c.fill();
+    T(c,Math.round(100*(.1+.8/(1+Math.exp(-(u-.45)*7))))+'%',CL+u*(CR-CL)+14,f(u)-20,{s:26,w:800,mono:1});
+  });
+};
+
+/* ---------------- 9 RLVR ---------------- */
+A.rlvr=(el,sig)=>{
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
+  const cy=h*.42,K=8,per=2.4;let cyc=-1,res=[],hist=[];
+  const W=[...Array(24)].map(()=>Math.random());
+  const box=(x,y,bw,bh,title,sub,col,glow)=>{rr(c,x,y,bw,bh,16);c.fillStyle='#0f121b';c.fill();c.strokeStyle=col;c.lineWidth=2;c.shadowColor=col;c.shadowBlur=glow;c.stroke();c.shadowBlur=0;
+    T(c,title,x+bw/2,y+30,{s:22,w:750,a:'center'});if(sub)T(c,sub,x+bw/2,y+bh-22,{s:14,c:C.dim,a:'center'})};
+  const PX=260,PW=220,VX=w*.6,VW=220,BH=200,HX=VX+VW+70;
+  run(sig,t=>{const k=Math.floor(t/per),lt=t%per;
+    if(k!==cyc){cyc=k;const n=k%22;const p=.12+.8*(1-Math.exp(-n/5));res=[...Array(K)].map(()=>Math.random()<p);if(n===0)hist=[];hist.push(res.filter(Boolean).length/K);W.forEach((v,i)=>W[i]=clamp(v+(Math.random()-.5)*.5,0,1))}
+    c.clearRect(0,0,w,h);
+    box(0,cy-60,170,120,'Prompt','math · code',C.line,0);arrow(c,175,cy,PX-8,cy,C.dim);
+    const flash=lt>2.0?1-(lt-2.0)/.4:0;
+    box(PX,cy-BH/2,PW,BH,'Policy','LLM weights',flash>0?C.amber:C.line,flash*30);
+    W.forEach((v,i)=>{const gx=PX+30+(i%6)*28,gy=cy-40+Math.floor(i/6)*22;c.fillStyle=rgba(C.amber,.15+.75*v);c.fillRect(gx,gy,22,16)});
+    box(VX,cy-BH/2,VW,BH,'Verifier','unit tests · checkers',C.violet,10);
+    for(let i=0;i<K;i++){const sy=cy-BH/2+18+i*(BH-36)/(K-1),tp=clamp((lt-i*.04)/1.0,0,1),x0=PX+PW,x1=VX;
+      const x=lerp(x0,x1,ease(tp)),y=lerp(cy,sy,Math.sin(tp*Math.PI/2));
+      c.strokeStyle='rgba(255,255,255,.06)';c.lineWidth=1;c.beginPath();c.moveTo(x0,cy);c.quadraticCurveTo((x0+x1)/2,sy,x1,sy);c.stroke();
+      const done=lt>1.15;c.fillStyle=done?(res[i]?C.green:C.pink):'#cfd5e2';
+      if(tp<1){c.beginPath();c.arc(x,y,6,0,7);c.fill()}
+      if(done)T(c,res[i]?'✓':'✗',VX-24,sy,{s:18,w:800,c:res[i]?C.green:C.pink,a:'center'})}
+    const rp=clamp((lt-1.3)/.75,0,1);
+    c.strokeStyle=rgba(C.green,.35);c.lineWidth=3;c.setLineDash([8,8]);c.beginPath();c.moveTo(VX+VW/2,cy+BH/2);c.bezierCurveTo(VX+VW/2,h-30,PX+PW/2,h-30,PX+PW/2,cy+BH/2+6);c.stroke();c.setLineDash([]);
+    if(rp>0&&rp<1){const bz=(a,b,c2,d,u)=>(1-u)**3*a+3*(1-u)**2*u*b+3*(1-u)*u*u*c2+u**3*d;
+      const x=bz(VX+VW/2,VX+VW/2,PX+PW/2,PX+PW/2,rp),y=bz(cy+BH/2,h-30,h-30,cy+BH/2,rp);c.fillStyle=C.green;c.shadowColor=C.green;c.shadowBlur=20;c.beginPath();c.arc(x,y,10,0,7);c.fill();c.shadowBlur=0}
+    T(c,'reward → reinforce winners',(VX+PX+PW)/2,h-58,{s:18,c:C.green,a:'center',w:650});
+    const HW=w-HX-10,HT=cy-BH/2,HB=cy+BH/2;T(c,'pass rate',HX,HT-18,{s:15,c:C.dim});
+    c.strokeStyle=C.line;c.beginPath();c.moveTo(HX,HB);c.lineTo(HX+HW,HB);c.stroke();
+    const bw=HW/22;hist.forEach((v,i)=>{c.fillStyle=i===hist.length-1?C.green:rgba(C.green,.45);c.fillRect(HX+i*bw+1,HB-(HB-HT)*v,bw-2,(HB-HT)*v)});
+    T(c,Math.round((hist[hist.length-1]||0)*100)+'%',HX+HW,HT-18,{s:24,w:800,c:C.green,a:'right',mono:1});
+    T(c,'No human labels.',0,40,{s:30,w:800});T(c,'Verify ≪ generate.',0,78,{s:22,c:C.dim,w:600});
+  });
+};
+
+/* ---------------- 10 AGENT ---------------- */
+A.agent=(el,sig)=>{
+  const pre=el.querySelector('pre');
+  const L=[['c','$ agent "fix the failing checkout test"'],['ag','● reading repo … 214 files'],['ag','● plan: reproduce → patch → verify'],['c','$ npm test'],['bad','✗ cart.spec.ts  expected 42, got 41'],['ag','● editing src/cart/total.ts  (+3 −1)'],['c','$ npm test'],['ok','✓ 318 passed'],['ag','● opening pull request …'],['ok','✓ PR ready for review']];
+  let li=0,ci=0,html='';
+  const tick=()=>{if(sig.aborted)return;if(li>=L.length){later(sig,2600,()=>{li=0;ci=0;html='';tick()});return}
+    const[k,s]=L[li];if(k==='c'&&ci<s.length){ci++;pre.innerHTML=html+`<span class="c">${s.slice(0,ci)}</span><span class="cur"></span>`;later(sig,28+Math.random()*40,tick);return}
+    html+=`<span class="${k}">${s}</span>\n`;li++;ci=0;pre.innerHTML=html+'<span class="cur"></span>';later(sig,k==='c'?350:520,tick)};
+  pre.innerHTML='';tick();
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
+  const D=[[2019.1,.04,'GPT-2'],[2020.4,.15,'GPT-3'],[2022.2,.6,''],[2023.2,5,'GPT-4'],[2024.4,9,''],[2024.8,28,''],[2024.95,39,'o1'],[2025.15,59,''],[2025.3,92,'o3'],[2025.6,137,'GPT-5']];
+  const x0=2019,x1=2027,y0=Math.log10(1/60),y1=Math.log10(2880),L0=80,R=w-30,Tp=60,B=h-50;
+  const X=x=>L0+(x-x0)/(x1-x0)*(R-L0),Y=m=>B-(Math.log10(m)-y0)/(y1-y0)*(B-Tp),trend=x=>137*Math.pow(2,(x-2025.6)*12/7);
+  run(sig,t=>{c.clearRect(0,0,w,h);
+    rr(c,0,0,w,h,14);c.fillStyle='#0b0d14';c.fill();
+    c.strokeStyle=C.line;c.lineWidth=1;
+    [[1/60,'1 sec'],[1,'1 min'],[10,'10 min'],[60,'1 hour'],[480,'8 hours'],[2880,'2 days']].forEach(([m,s])=>{c.beginPath();c.moveTo(L0,Y(m));c.lineTo(R,Y(m));c.stroke();T(c,s,L0-8,Y(m),{s:12,c:C.dim,a:'right',mono:1})});
+    for(let y=2019;y<=2027;y+=2)T(c,String(y),X(y),B+20,{s:13,c:C.dim,a:'center',mono:1});
+    T(c,'how long a task agents can finish',L0,Tp-32,{s:18,c:'#cfd5e2',w:700});
+    const p=clamp(t/4,0,1),xe=lerp(x0,2025.6,p);
+    c.beginPath();for(let x=2019;x<=xe;x+=.02){x===2019?c.moveTo(X(x),Y(trend(x))):c.lineTo(X(x),Y(trend(x)))}c.strokeStyle=rgba(C.green,.5);c.lineWidth=2;c.stroke();
+    if(p>=1){const q=clamp((t-4)/1.5,0,1);c.setLineDash([6,6]);c.beginPath();c.moveTo(X(2025.6),Y(trend(2025.6)));const xx=lerp(2025.6,2026.85,q);c.lineTo(X(xx),Y(trend(xx)));c.strokeStyle=C.green;c.stroke();c.setLineDash([]);
+      if(q>=1){T(c,'×2 every ~7 months',X(2026.85),Y(trend(2026.85))-22,{s:17,c:C.green,a:'right',w:700})}}
+    D.forEach(([x,m,s])=>{if(x>xe+.01)return;c.fillStyle=C.green;c.shadowColor=C.green;c.shadowBlur=10;c.beginPath();c.arc(X(x),Y(m),6,0,7);c.fill();c.shadowBlur=0;if(s)T(c,s,X(x)+10,Y(m)+14,{s:13,c:'#cfd5e2',w:600})});
+  });
+};
+
+/* ---------------- 11 VLA ---------------- */
+A.vla=(el,sig)=>{
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
+  const camX=0,camY=60,camW=240,camH=180,TX=w*.36,TW=220,TY=40,TH=h-80,RX=w*.66;
+  const words=['pick','up','the','red','cube'],acts=['Δx +.12','Δy −.03','Δz −.08','grip 1'];
+  const ground=h-60,base={x:RX+160,y:ground-30},L1=170,L2=150;
+  const cube0={x:RX+20,y:ground-22},bin={x:RX+330,y:ground};
+  const keys=[[{x:base.x,y:base.y-260},0],[{x:cube0.x,y:cube0.y-80},0],[{x:cube0.x,y:cube0.y-26},0],[{x:cube0.x,y:cube0.y-26},1],[{x:cube0.x+60,y:cube0.y-220},1],[{x:bin.x,y:bin.y-140},1],[{x:bin.x,y:bin.y-140},0],[{x:base.x,y:base.y-260},0]];
+  function ik(tx,ty){const dx=tx-base.x,dy=ty-base.y,d=clamp(Math.hypot(dx,dy),20,L1+L2-1);const a2=Math.acos((d*d-L1*L1-L2*L2)/(2*L1*L2));const a1=Math.atan2(dy,dx)-Math.atan2(L2*Math.sin(a2),L1+L2*Math.cos(a2));return[a1,a2]}
+  const flows=[];let last=0;
+  run(sig,(t,dt)=>{c.clearRect(0,0,w,h);
+    rr(c,camX,camY,camW,camH,10);c.fillStyle='#1a1f2e';c.fill();
+    for(let i=0;i<8;i++)for(let j=0;j<6;j++){const px=camX+i*30,py=camY+j*30;let col=j>3?'#3a2f28':'#1d2333';if(j===4&&i===1)col='#d23b4a';if(j>=3&&i>=6)col='#2a6bd6';c.fillStyle=col;c.fillRect(px+1,py+1,28,28)}
+    T(c,'camera → patches',camX,camY-18,{s:15,c:C.dim});
+    words.forEach((s,i)=>{const x=camX+i*50,y=camY+camH+60;rr(c,x,y-16,44,32,8);c.fillStyle='#1b2030';c.fill();T(c,s,x+22,y,{s:13,a:'center',c:'#cfd5e2',mono:1})});
+    T(c,'instruction → tokens',camX,camY+camH+28,{s:15,c:C.dim});
+    if(t-last>.12){last=t;const fromCam=Math.random()<.6;flows.push({x:fromCam?camX+Math.random()*camW:camX+Math.random()*240,y:fromCam?camY+Math.random()*camH:camY+camH+60,u:0,col:fromCam?C.cyan:C.violet,out:false})}
+    rr(c,TX,TY,TW,TH,18);c.fillStyle='#0f121b';c.fill();c.strokeStyle=C.amber;c.lineWidth=2;c.stroke();
+    for(let l=0;l<8;l++){const ly=TY+30+l*(TH-60)/8,on=(Math.floor(t*8)%8)===l;rr(c,TX+20,ly,TW-40,(TH-60)/8-8,6);c.fillStyle=on?rgba(C.amber,.6):rgba(C.amber,.12);c.fill()}
+    T(c,'VLA',TX+TW/2,TY-18,{s:20,w:800,a:'center',c:C.amber});
+    for(let i=flows.length-1;i>=0;i--){const f=flows[i];f.u+=dt*1.4;
+      if(!f.out){const x=lerp(f.x,TX,ease(clamp(f.u,0,1))),y=lerp(f.y,TY+TH/2,ease(clamp(f.u,0,1)));c.fillStyle=f.col;c.fillRect(x-4,y-4,8,8);
+        if(f.u>=1){if(Math.random()<.35){f.out=true;f.u=0;f.a=acts[Math.random()*4|0]}else flows.splice(i,1)}}
+      else{const x=lerp(TX+TW,RX-10,ease(clamp(f.u,0,1))),y=TY+TH/2+Math.sin(f.u*3)*40;rr(c,x-34,y-12,68,24,6);c.fillStyle=rgba(C.green,.9*(1-f.u*.5));c.fill();T(c,f.a,x,y,{s:12,a:'center',c:'#08110b',w:700,mono:1});if(f.u>=1)flows.splice(i,1)}}
+    c.fillStyle='#1b2030';c.fillRect(RX-20,ground,440,12);
+    c.strokeStyle='#2a6bd6';c.lineWidth=4;c.beginPath();c.moveTo(bin.x-45,bin.y-70);c.lineTo(bin.x-38,bin.y);c.lineTo(bin.x+38,bin.y);c.lineTo(bin.x+45,bin.y-70);c.stroke();
+    const per=7,lt=(t%per)/per*(keys.length-1),ki=Math.floor(lt),kf=ease(lt-ki),k0=keys[ki],k1=keys[Math.min(ki+1,keys.length-1)];
+    const tx=lerp(k0[0].x,k1[0].x,kf),ty=lerp(k0[0].y,k1[0].y,kf),grip=k0[1]&&k1[1]?1:(k0[1]&&!k1[1]?0:k0[1]);
+    const[a1,a2]=ik(tx,ty);const ex=base.x+L1*Math.cos(a1),ey=base.y+L1*Math.sin(a1),hx=ex+L2*Math.cos(a1+a2),hy=ey+L2*Math.sin(a1+a2);
+    let cube={...cube0};if(ki>=3&&ki<6&&(grip||ki===5))cube={x:hx,y:hy+26};else if(ki>=6)cube={x:bin.x,y:bin.y-22};
+    c.fillStyle='#d23b4a';c.shadowColor='#d23b4a';c.shadowBlur=14;c.fillRect(cube.x-22,cube.y-22,44,44);c.shadowBlur=0;
+    c.fillStyle='#2a3042';c.fillRect(base.x-40,base.y,80,30);
+    c.lineCap='round';c.strokeStyle='#cfd5e2';c.lineWidth=22;c.beginPath();c.moveTo(base.x,base.y);c.lineTo(ex,ey);c.stroke();c.lineWidth=16;c.beginPath();c.moveTo(ex,ey);c.lineTo(hx,hy);c.stroke();
+    c.fillStyle=C.amber;[[base.x,base.y],[ex,ey]].forEach(([x,y])=>{c.beginPath();c.arc(x,y,10,0,7);c.fill()});
+    const g=grip?22:34;c.strokeStyle='#cfd5e2';c.lineWidth=6;c.beginPath();c.moveTo(hx-g,hy);c.lineTo(hx+g,hy);c.moveTo(hx-g,hy);c.lineTo(hx-g,hy+24);c.moveTo(hx+g,hy);c.lineTo(hx+g,hy+24);c.stroke();c.lineCap='butt';
+  });
+};
+
+/* ---------------- 12 EMBODIED ---------------- */
+A.embodied=(el,sig)=>{
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
+  const steps=['find mug','grasp mug','carry to sink','place mug','next: plates'];
+  const LX=0,LW=w*.62,top=10,bot=h*.56;
+  run(sig,t=>{c.clearRect(0,0,w,h);const si=Math.floor(t/1.6)%steps.length,sp=(t%1.6)/1.6;
+    rr(c,LX,top,LW,h*.4,18);c.fillStyle='#0e1119';c.fill();c.strokeStyle=rgba(C.cyan,.5);c.lineWidth=1.5;c.stroke();
+    T(c,'System 2',LX+24,top+34,{s:26,w:800,c:C.cyan});T(c,'LLM agent · plans · ~1 Hz',LX+160,top+34,{s:17,c:C.dim});
+    T(c,'goal: "tidy the kitchen"',LX+24,top+80,{s:20,c:'#cfd5e2',mono:1});
+    steps.forEach((s,i)=>{const bw=(LW-48-4*12)/5,x=LX+24+i*(bw+12),y=top+110,on=i===si,done=i<si;
+      rr(c,x,y,bw,60,12);c.fillStyle=on?rgba(C.cyan,.25):done?'#141a26':'#10131c';c.fill();c.strokeStyle=on?C.cyan:C.line;c.lineWidth=on?2.5:1;c.stroke();
+      T(c,s,x+bw/2,y+30,{s:16,a:'center',c:on?'#fff':done?C.dim:'#aab1c0',w:on?700:500})});
+    const bw=(LW-48-4*12)/5,ax=LX+24+si*(bw+12)+bw/2;
+    arrow(c,ax,top+176,ax,bot+16,rgba(C.cyan,.9),3);
+    const by=bot+20,bh=h-by-10;rr(c,LX,by,LW,bh,18);c.fillStyle='#0e1119';c.fill();c.strokeStyle=rgba(C.pink,.5);c.lineWidth=1.5;c.stroke();
+    T(c,'System 1',LX+24,by+34,{s:26,w:800,c:C.pink});T(c,'VLA policy · moves · ~200 Hz',LX+160,by+34,{s:17,c:C.dim});
+    for(let j=0;j<4;j++){const yy=by+80+j*((bh-100)/4);c.strokeStyle=rgba(C.pink,.85-j*.15);c.lineWidth=2;c.beginPath();
+      for(let x=0;x<LW-48;x+=2){const ph=(x*.06+t*40+j*7);const v=Math.sin(ph*.3+si)*.5+Math.sin(ph*.11+j)*.35+Math.sin(ph*.71)*.15;const px=LX+24+x,py=yy+v*12;x?c.lineTo(px,py):c.moveTo(px,py)}c.stroke();
+      T(c,['shoulder','elbow','wrist','grip'][j],LX+LW-20,yy,{s:12,c:C.dim,a:'right',mono:1})}
+    const ox=LW+(w-LW)/2,gy=h-30;c.fillStyle='#1b2030';c.fillRect(LW+40,gy,w-LW-40,8);
+    const walk=Math.sin(t*3),reach=si===1||si===3?.9:.2+.15*Math.sin(t*2),hipY=gy-190;
+    c.lineCap='round';c.strokeStyle='#cfd5e2';
+    c.lineWidth=14;c.beginPath();c.moveTo(ox,hipY);c.lineTo(ox+walk*20,gy-95);c.lineTo(ox+walk*24,gy-4);c.moveTo(ox,hipY);c.lineTo(ox-walk*20,gy-95);c.lineTo(ox-walk*24,gy-4);c.stroke();
+    c.lineWidth=30;c.beginPath();c.moveTo(ox,hipY);c.lineTo(ox,hipY-150);c.stroke();
+    c.fillStyle='#cfd5e2';c.beginPath();c.arc(ox,hipY-195,30,0,7);c.fill();c.fillStyle=C.cyan;c.fillRect(ox-18,hipY-202,36,8);
+    const sx=ox,sy=hipY-135,ea=-.2-reach*.9,ex=sx+70*Math.cos(ea),ey=sy+70*Math.sin(-ea)*-1+40*(1-reach),hx=ex+70*Math.cos(ea*.4),hy=ey+60*(1-reach)-10*reach;
+    c.lineWidth=12;c.beginPath();c.moveTo(sx,sy);c.lineTo(ex,ey);c.lineTo(hx,hy);c.stroke();c.beginPath();c.moveTo(sx,sy);c.lineTo(sx-35,sy+70);c.lineTo(sx-30,sy+130);c.stroke();c.lineCap='butt';
+    c.fillStyle=C.pink;[[ox,hipY],[sx,sy],[ex,ey],[hx,hy],[ox+walk*20,gy-95],[ox-walk*20,gy-95]].forEach(([x,y])=>{c.globalAlpha=.6+.4*Math.sin(t*20+x);c.beginPath();c.arc(x,y,7,0,7);c.fill()});c.globalAlpha=1;
+    if(si===2||si===3){c.fillStyle='#e8e2d0';c.fillRect(hx-10,hy-6,20,22)}
+  });
+};
+
+/* ---------------- 13 MIND MAP ---------------- */
+A.mindmap=(el,sig)=>{
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
+  const tree=[['Pretraining',C.amber,['scaling laws','data mixtures','tokens / param']],['Reasoning',C.cyan,['test-time compute','RLVR','self-verification']],['Agents',C.green,['agentic coding','computer use','long horizons']],['Embodied',C.pink,['VLAs','humanoids','world models']],['Science',C.violet,['autonomous labs','materials','biology']]];
+  const N=[{l:'Compute +\ngeneral methods',col:'#ffffff',r:0,p:-1,lvl:0}];
+  tree.forEach(([l,col,kids],i)=>{const a=-Math.PI/2+i*2*Math.PI/5;const id=N.length;N.push({l,col,a,R:.27,p:0,lvl:1});
+    kids.forEach((k,j)=>N.push({l:k,col,a:a+(j-1)*.36,R:.45,p:id,lvl:2}))});
+  const cx=w/2,cy=h/2+10,sc=Math.min(w,h*1.6);
+  N.forEach((n,i)=>{n.hx=i?cx+Math.cos(n.a)*n.R*sc:cx;n.hy=i?cy+Math.sin(n.a)*n.R*sc*.62:cy;n.x=cx;n.y=cy;n.vx=0;n.vy=0;n.born=n.lvl*.5+(i%4)*.08});
+  let drag=null,hover=-1;
+  const hit=(p)=>{for(let i=N.length-1;i>=0;i--){const n=N[i];if(Math.abs(p.x-n.x)<(n.lvl?80:110)&&Math.abs(p.y-n.y)<(n.lvl?22:40))return i}return -1};
+  cvs.addEventListener('pointerdown',e=>{const p=mpos(cvs,e);const i=hit(p);if(i>=0){drag=i;cvs.setPointerCapture(e.pointerId)}},{signal:sig});
+  cvs.addEventListener('pointermove',e=>{const p=mpos(cvs,e);if(drag!==null){N[drag].hx=p.x;N[drag].hy=p.y}hover=hit(p);cvs.style.cursor=hover>=0?'grab':'default'},{signal:sig});
+  cvs.addEventListener('pointerup',()=>drag=null,{signal:sig});
+  const branchOf=i=>{if(i<=0)return -1;return N[i].lvl===1?i:N[i].p};
+  run(sig,(t,dt)=>{c.clearRect(0,0,w,h);const hb=branchOf(hover);
+    N.forEach((n,i)=>{const tx=n.hx+Math.sin(t*.8+i)*4,ty=n.hy+Math.cos(t*.7+i*1.3)*4;n.vx=(n.vx+(tx-n.x)*dt*14)*.86;n.vy=(n.vy+(ty-n.y)*dt*14)*.86;n.x+=n.vx;n.y+=n.vy});
+    N.forEach((n,i)=>{if(n.p<0||t<n.born)return;const p=N[n.p],dim=hb>=0&&branchOf(i)!==hb;
+      c.strokeStyle=rgba(n.col,dim?.12:.5);c.lineWidth=n.lvl===1?3:1.6;c.beginPath();const mx=(p.x+n.x)/2,my=(p.y+n.y)/2;c.moveTo(p.x,p.y);c.quadraticCurveTo(mx+(p.y-n.y)*.12,my-(p.x-n.x)*.12,n.x,n.y);c.stroke();
+      const u=((t*.5+i*.13)%1),qx=(1-u)**2*p.x+2*(1-u)*u*(mx+(p.y-n.y)*.12)+u*u*n.x,qy=(1-u)**2*p.y+2*(1-u)*u*(my-(p.x-n.x)*.12)+u*u*n.y;
+      c.fillStyle=n.col;c.globalAlpha=dim?.15:.9;c.beginPath();c.arc(qx,qy,3.5,0,7);c.fill();c.globalAlpha=1});
+    N.forEach((n,i)=>{if(t<n.born)return;const a=clamp((t-n.born)*3,0,1),dim=hb>=0&&branchOf(i)!==hb&&i;c.globalAlpha=a*(dim?.3:1);
+      if(i===0){c.fillStyle='#fff';c.shadowColor=C.amber;c.shadowBlur=40+10*Math.sin(t*2);c.beginPath();c.arc(n.x,n.y,72,0,7);c.fill();c.shadowBlur=0;
+        T(c,'Compute +',n.x,n.y-12,{s:20,w:800,a:'center',c:'#111'});T(c,'general methods',n.x,n.y+14,{s:16,w:700,a:'center',c:'#111'})}
+      else{c.font=`${n.lvl===1?750:500} ${n.lvl===1?22:16}px Inter,system-ui`;const tw=c.measureText(n.l).width+30,th=n.lvl===1?44:32;
+        rr(c,n.x-tw/2,n.y-th/2,tw,th,th/2);c.fillStyle=n.lvl===1?n.col:'#121624';c.fill();if(n.lvl===2){c.strokeStyle=rgba(n.col,.7);c.lineWidth=1.5;c.stroke()}
+        T(c,n.l,n.x,n.y+1,{s:n.lvl===1?22:16,w:n.lvl===1?750:500,a:'center',c:n.lvl===1?'#111':'#e9ecf3'})}
+      c.globalAlpha=1});
+  });
+};
+
+/* ---------------- 14 ACTUATOR ---------------- */
+A.actuator=(el,sig)=>{
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
+  const sl=el.querySelector('input'),autoB=el.querySelector('.auto'),tabs=[...el.querySelectorAll('.tabs button')];
+  const pt=el.querySelector('.panel h3'),pd=el.querySelector('.panel p');
+  const SETS={
+    rot:[
+      {n:'Driver board',r:118,w:14,col:'#1f7a4a',k:'pcb',d:'FOC motor driver: MOSFET/GaN power stage + MCU. Runs current loops at tens of kHz, talks EtherCAT/CAN to the body.'},
+      {n:'Absolute encoder',r:90,w:10,col:'#3b4256',k:'enc',d:'Magnetic or optical. Often two: one on the motor, one on the output, so the robot knows joint angle at power-on.'},
+      {n:'Brake',r:104,w:18,col:'#7a5a3a',k:'brake',d:'Fail-safe brake holds the joint when power is cut — so the robot does not collapse.'},
+      {n:'Stator',r:140,w:44,col:'#b8742c',k:'coil',d:'Copper windings on laminated steel. Frameless, flat "pancake" motors maximise torque per kilogram.'},
+      {n:'Rotor',r:112,w:40,col:'#5b6275',k:'mag',d:'Ring of NdFeB rare-earth magnets. Magnet supply ≈ actuator supply.'},
+      {n:'Wave generator',r:84,w:22,col:'#9aa3b5',k:'cam',d:'Elliptical cam inside a thin bearing. Spins with the motor and flexes the flexspline.'},
+      {n:'Flexspline',r:96,w:30,col:'#c8ced9',k:'teeth',d:'Thin, flexible toothed cup. Has 2 fewer teeth than the circular spline → 50–160:1 reduction, zero backlash.'},
+      {n:'Circular spline',r:130,w:26,col:'#8a93a6',k:'ring',d:'Rigid internal gear. Strain-wave ("harmonic") gears are precision parts with few suppliers.'},
+      {n:'Cross-roller bearing',r:138,w:22,col:'#6b7387',k:'bear',d:'Crossed rollers carry radial, axial and tipping loads in one thin ring.'},
+      {n:'Torque sensor',r:110,w:16,col:'#2d3a5a',k:'strain',d:'Strain gauges on a spoked flexure. Lets the joint feel force — key for safe contact with people.'},
+      {n:'Output flange',r:124,w:20,col:'#aab1c0',k:'flange',d:'Bolts to the next link of the limb. Everything before it exists to make this turn precisely.'}],
+    lin:[
+      {n:'Driver board',r:110,w:14,col:'#1f7a4a',k:'pcb',d:'Motor driver + MCU. Same electronics as the rotary joint.'},
+      {n:'Encoder',r:84,w:10,col:'#3b4256',k:'enc',d:'Measures motor angle; screw lead converts it to precise linear position.'},
+      {n:'Stator',r:130,w:46,col:'#b8742c',k:'coil',d:'Frameless motor stator with copper windings.'},
+      {n:'Hollow rotor',r:104,w:44,col:'#5b6275',k:'mag',d:'Magnet ring, hollow so the screw can pass through it.'},
+      {n:'Roller-screw nut',r:92,w:40,col:'#c8ced9',k:'rollers',d:'Planetary roller screw: threaded rollers instead of balls → many contact lines, huge force in a small package. Used in Tesla Optimus limbs.'},
+      {n:'Thrust bearing',r:100,w:18,col:'#6b7387',k:'bear',d:'Carries the axial load of the push/pull.'},
+      {n:'Screw shaft',r:30,w:200,col:'#d4d9e2',k:'screw',d:'Precision-ground threaded shaft. Grinding capacity for roller screws is a real bottleneck.'},
+      {n:'Load cell',r:58,w:16,col:'#2d3a5a',k:'strain',d:'Measures push/pull force for compliant control.'},
+      {n:'Rod end',r:44,w:30,col:'#aab1c0',k:'flange',d:'Connects to the limb — like a muscle tendon.'}]};
+  let key='rot',auto=true,sel=-1,hov=-1;const cy=h/2-10,KK=.32;
+  tabs.forEach(b=>b.onclick=()=>{tabs.forEach(x=>x.classList.remove('on'));b.classList.add('on');key=b.dataset.k;sel=-1;show(0)});
+  sl.oninput=()=>auto=false;autoB.onclick=()=>auto=true;
+  function show(i){const p=SETS[key][i];pt.textContent=p.n;pd.textContent=p.d}
+  show(0);
+  function face(x,r,rin,k,col,t){
+    const P=(rad,a)=>[x+rad*KK*Math.cos(a),cy+rad*Math.sin(a)];
+    c.save();c.beginPath();c.ellipse(x,cy,r*KK,r,0,0,7);c.clip();
+    if(k==='pcb'){c.fillStyle='#1f7a4a';c.fill();for(let i=0;i<7;i++){const[a,b]=P(r*.55,i*.9+.3);c.fillStyle=i%3?'#111':'#c9a227';c.fillRect(a-4,b-9,8,18)}c.strokeStyle='#c9a227';c.lineWidth=1;for(let i=0;i<5;i++){c.beginPath();c.ellipse(x,cy,r*KK*(.3+i*.12),r*(.3+i*.12),0,i,i+1.5);c.stroke()}}
+    if(k==='enc'){for(let i=0;i<72;i++){const a=i/72*Math.PI*2;c.strokeStyle=i%2?'#e9ecf3':'#111';c.lineWidth=2;const[a1,b1]=P(r*.7,a),[a2,b2]=P(r*.95,a);c.beginPath();c.moveTo(a1,b1);c.lineTo(a2,b2);c.stroke()}}
+    if(k==='brake'){c.fillStyle='#4a3622';c.beginPath();c.ellipse(x,cy,r*KK*.92,r*.92,0,0,7);c.fill()}
+    if(k==='coil'){for(let i=0;i<18;i++){const a=i/18*Math.PI*2;c.fillStyle=i%2?'#d98c3a':'#a35f1e';c.beginPath();const p1=P(r*.62,a-.12),p2=P(r*.95,a-.12),p3=P(r*.95,a+.12),p4=P(r*.62,a+.12);c.moveTo(...p1);c.lineTo(...p2);c.lineTo(...p3);c.lineTo(...p4);c.fill()}}
+    if(k==='mag'){const rot=t*1.2;for(let i=0;i<16;i++){const a=i/16*Math.PI*2+rot;c.fillStyle=i%2?'#d23b4a':'#2a6bd6';c.beginPath();const p1=P(r*.72,a),p2=P(r*.97,a),p3=P(r*.97,a+Math.PI/8-.04),p4=P(r*.72,a+Math.PI/8-.04);c.moveTo(...p1);c.lineTo(...p2);c.lineTo(...p3);c.lineTo(...p4);c.fill()}}
+    if(k==='cam'){const rot=t*1.2;c.fillStyle='#6b7387';c.beginPath();for(let i=0;i<=40;i++){const a=i/40*Math.PI*2,rr2=r*(.85+.12*Math.cos(2*(a-rot)));const[q,v]=P(rr2,a);i?c.lineTo(q,v):c.moveTo(q,v)}c.fill()}
+    if(k==='teeth'||k==='ring'){const n=k==='teeth'?60:62;for(let i=0;i<n;i++){const a=i/n*Math.PI*2;c.strokeStyle='rgba(0,0,0,.45)';c.lineWidth=1.5;const[a1,b1]=P(r*(k==='ring'?.62:.88),a),[a2,b2]=P(r*(k==='ring'?.7:.98),a);c.beginPath();c.moveTo(a1,b1);c.lineTo(a2,b2);c.stroke()}}
+    if(k==='bear'||k==='rollers'){const n=k==='bear'?24:8;for(let i=0;i<n;i++){const a=i/n*Math.PI*2+t*.4;const[q,v]=P(r*(k==='bear'?.82:.6),a);c.fillStyle=k==='bear'?'#e9ecf3':'#9aa3b5';c.beginPath();c.ellipse(q,v,(k==='bear'?6:14)*KK*1.6,k==='bear'?7:16,0,0,7);c.fill()}}
+    if(k==='strain'){for(let i=0;i<6;i++){const a=i/6*Math.PI*2;const[a1,b1]=P(r*.35,a),[a2,b2]=P(r*.9,a);c.strokeStyle='#5b6a8f';c.lineWidth=8;c.beginPath();c.moveTo(a1,b1);c.lineTo(a2,b2);c.stroke();const[g1,g2]=P(r*.62,a);c.fillStyle='#c9a227';c.fillRect(g1-3,g2-6,6,12)}}
+    if(k==='flange'){for(let i=0;i<8;i++){const[q,v]=P(r*.72,i/8*Math.PI*2);c.fillStyle='#3a4152';c.beginPath();c.ellipse(q,v,4,9,0,0,7);c.fill()}}
+    c.restore();
+    if(rin){c.fillStyle='#07080d';c.beginPath();c.ellipse(x,cy,rin*KK,rin,0,0,7);c.fill()}
+  }
+  function cyl(x,p,hl,t){const r=p.r,ww=p.w,x0=x-ww/2,x1=x+ww/2,col=p.col;
+    const g=c.createLinearGradient(0,cy-r,0,cy+r);g.addColorStop(0,shade(col,1.35));g.addColorStop(.45,col);g.addColorStop(1,shade(col,.35));
+    c.fillStyle=g;c.beginPath();c.ellipse(x0,cy,r*KK,r,0,Math.PI/2,Math.PI*1.5);c.lineTo(x1,cy-r);c.ellipse(x1,cy,r*KK,r,0,-Math.PI/2,Math.PI/2);c.closePath();c.fill();
+    if(p.k==='screw'){c.strokeStyle='rgba(0,0,0,.35)';c.lineWidth=2;for(let s=x0;s<x1;s+=9){c.beginPath();c.moveTo(s,cy-r);c.lineTo(s+6,cy+r);c.stroke()}}
+    c.fillStyle=shade(col,1.12);c.beginPath();c.ellipse(x1,cy,r*KK,r,0,0,7);c.fill();
+    face(x1,r,['ring','bear','coil','mag','teeth'].includes(p.k)?r*.6:(p.k==='strain'||p.k==='flange'?r*.25:0),p.k,col,t);
+    c.strokeStyle=hl?C.amber:'rgba(0,0,0,.5)';c.lineWidth=hl?3:1;if(hl){c.shadowColor=C.amber;c.shadowBlur=20}
+    c.beginPath();c.ellipse(x1,cy,r*KK,r,0,0,7);c.stroke();c.beginPath();c.moveTo(x0,cy-r);c.lineTo(x1,cy-r);c.moveTo(x0,cy+r);c.lineTo(x1,cy+r);c.stroke();c.shadowBlur=0}
+  let pos=[];
+  cvs.addEventListener('pointermove',e=>{const m=mpos(cvs,e);hov=-1;let best=1e9;pos.forEach((q,i)=>{const p=SETS[key][i];if(m.x>q-p.w/2-p.r*KK&&m.x<q+p.w/2+p.r*KK&&Math.abs(m.y-cy)<p.r){const d=Math.abs(m.x-q);if(d<best){best=d;hov=i}}});if(hov>=0)show(hov);cvs.style.cursor=hov>=0?'pointer':'default'},{signal:sig});
+  cvs.addEventListener('click',()=>{sel=hov},{signal:sig});
+  run(sig,t=>{const P=SETS[key];
+    if(auto){const e=clamp(.5-.62*Math.cos(t*.7),0,1);sl.value=Math.round(e*100)}
+    const e=sl.value/100,ee=ease(e);
+    const tot=P.reduce((s,p)=>s+p.w,0),comp=tot*.55,span=w-200,gap=(span-tot)/(P.length-1);
+    let ax=w/2-comp/2,ex=100;pos=P.map(p=>{const a=ax+p.w*.275,b=ex+p.w/2;ax+=p.w*.55;ex+=p.w+gap;return lerp(a,b,ee)});
+    if(auto&&e>.6&&hov<0){const i=Math.floor(t/1.4)%P.length;show(i);sel=i}
+    c.clearRect(0,0,w,h);
+    c.strokeStyle='rgba(255,255,255,.08)';c.setLineDash([6,6]);c.beginPath();c.moveTo(20,cy);c.lineTo(w-20,cy);c.stroke();c.setLineDash([]);
+    P.forEach((p,i)=>cyl(pos[i],p,i===hov||(hov<0&&i===sel&&e>.6),t));
+    if(e>.55){c.globalAlpha=clamp((e-.55)*4,0,1);P.forEach((p,i)=>{const up=i%2===0,x=pos[i]+p.w/2,y0=up?cy-p.r-8:cy+p.r+8,y1=up?40:h-30;
+      c.strokeStyle='rgba(255,255,255,.25)';c.lineWidth=1;c.beginPath();c.moveTo(x,y0);c.lineTo(x,y1+(up?10:-10));c.stroke();
+      T(c,p.n,x,y1,{s:14,a:'center',w:650,c:(i===hov||i===sel)?C.amber:'#cfd5e2'})});c.globalAlpha=1}
+  });
+};
+
+/* ---------------- 15 BOM ---------------- */
+A.bom=(el,sig)=>{
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
+  const S2=[['Actuators',50,C.amber,'motors · strain-wave gears · roller screws · magnets'],['Hands & touch',15,C.pink,'dexterous hands, tactile skins'],['Compute & sensors',15,C.cyan,'GPU module, cameras, IMUs'],['Structure & wiring',12,'#8b93a6','frame, harness, cooling'],['Battery & power',8,C.green,'packs for an 8-hour shift']];
+  const cx=w*.27,cy=h/2,R=230,r=140;let hov=-1;
+  const J=[[0,-230],[-40,-170],[40,-170],[-75,-110],[75,-110],[-100,-50],[100,-50],[-110,-10],[110,-10],[0,-120],[0,-60],[-28,0],[28,0],[-30,90],[30,90],[-32,180],[32,180],[-36,215],[36,215],[-118,10],[118,10],[-122,22],[122,22],[0,-200]];
+  cvs.addEventListener('pointermove',e=>{const m=mpos(cvs,e);const dx=m.x-cx,dy=m.y-cy,d=Math.hypot(dx,dy);hov=-1;if(d>r&&d<R+20){let a=Math.atan2(dy,dx)+Math.PI/2;if(a<0)a+=Math.PI*2;let acc=0;S2.forEach((s,i)=>{const sw=s[1]/100*Math.PI*2;if(a>=acc&&a<acc+sw)hov=i;acc+=sw})}},{signal:sig});
+  run(sig,t=>{c.clearRect(0,0,w,h);const p=clamp(t/1.6,0,1);let acc=-Math.PI/2;const tot=Math.PI*2*ease(p);
+    S2.forEach((s,i)=>{const sw=s[1]/100*Math.PI*2,a0=acc,a1=Math.min(acc+sw,-Math.PI/2+tot);acc+=sw;if(a1<=a0)return;const off=i===hov?14:0,mid=(a0+a1)/2;
+      c.fillStyle=s[2];c.globalAlpha=hov<0||i===hov?1:.35;c.beginPath();c.arc(cx+Math.cos(mid)*off,cy+Math.sin(mid)*off,R,a0+.01,a1-.01);c.arc(cx+Math.cos(mid)*off,cy+Math.sin(mid)*off,r,a1-.01,a0+.01,true);c.closePath();c.fill();c.globalAlpha=1;
+      if(p>=1){const lx=cx+Math.cos(mid)*(R+40),ly=cy+Math.sin(mid)*(R+40);T(c,s[1]+'%',lx,ly,{s:20,w:800,a:'center',c:s[2],mono:1})}});
+    const sel=hov>=0?S2[hov]:S2[Math.floor(t/2)%S2.length];
+    T(c,sel[0],cx,cy-12,{s:26,w:800,a:'center'});T(c,sel[1]+'% of cost',cx,cy+22,{s:18,a:'center',c:C.dim});
+    const lx=w*.56;S2.forEach((s,i)=>{const y=60+i*58;c.globalAlpha=hov<0||hov===i?1:.4;c.fillStyle=s[2];rr(c,lx,y-12,24,24,6);c.fill();T(c,s[0],lx+40,y-6,{s:22,w:700});T(c,s[3],lx+40,y+16,{s:15,c:C.dim});c.globalAlpha=1});
+    const hx=w*.87,hy=h*.58,k=.95;c.strokeStyle='#2a3042';c.lineCap='round';c.lineWidth=18;
+    const seg=(a,b)=>{c.beginPath();c.moveTo(hx+J[a][0]*k,hy+J[a][1]*k);c.lineTo(hx+J[b][0]*k,hy+J[b][1]*k);c.stroke()};
+    [[23,9],[9,10],[10,11],[10,12],[1,3],[2,4],[3,5],[4,6],[5,7],[6,8],[11,13],[12,14],[13,15],[14,16],[15,17],[16,18],[1,2]].forEach(([a,b])=>seg(a,b));
+    c.fillStyle='#2a3042';c.beginPath();c.arc(hx+J[0][0]*k,hy+J[0][1]*k,26,0,7);c.fill();c.lineCap='butt';
+    const n=Math.min(J.length,Math.floor(t*8));let on=0;
+    J.slice(1).forEach(([x,y],i)=>{if(i>=n)return;on++;const blink=.5+.5*Math.sin(t*5+i);const col=(hov<0||hov===0)?C.amber:(hov===1&&i>=18)?C.pink:'#59606f';c.fillStyle=col;c.globalAlpha=.5+.5*blink;c.beginPath();c.arc(hx+x*k,hy+y*k,8,0,7);c.fill();c.globalAlpha=1});
+    T(c,`${Math.min(40,Math.round(on*40/(J.length-1)))}+ joints`,hx,h-50,{s:22,w:800,a:'center',c:C.amber,mono:1});
+  });
+};
+
+/* ---------------- 16 LAB ---------------- */
+A.lab=(el,sig)=>{
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
+  const sl=el.querySelector('input'),autoB=el.querySelector('.auto'),pt=el.querySelector('.panel h3'),pd=el.querySelector('.panel p');
+  let auto=true,hov=-1,bbs=[];sl.oninput=()=>auto=false;autoB.onclick=()=>auto=true;
+  let s=3,ox=0,oy=0;
+  const P3=(x,y,z)=>[ox+(x-y)*.866*s,oy+(x+y)*.5*s-z*s];
+  const poly=(pts,fill,stroke)=>{c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.closePath();c.fillStyle=fill;c.fill();if(stroke){c.strokeStyle=stroke;c.lineWidth=1;c.stroke()}};
+  let bb=null;const track=pts=>pts.forEach(([x,y])=>{bb[0]=Math.min(bb[0],x);bb[1]=Math.min(bb[1],y);bb[2]=Math.max(bb[2],x);bb[3]=Math.max(bb[3],y)});
+  function box(x,y,z,W,D,H,col,a=1){const p=P3;const top=[p(x,y,z+H),p(x+W,y,z+H),p(x+W,y+D,z+H),p(x,y+D,z+H)],fy=[p(x,y+D,z),p(x+W,y+D,z),p(x+W,y+D,z+H),p(x,y+D,z+H)],fx=[p(x+W,y,z),p(x+W,y+D,z),p(x+W,y+D,z+H),p(x+W,y,z+H)];
+    c.globalAlpha=a;poly(fy,shade(col,.72),'rgba(0,0,0,.25)');poly(fx,shade(col,.52),'rgba(0,0,0,.25)');poly(top,shade(col,1.05),'rgba(0,0,0,.25)');c.globalAlpha=1;if(bb)track([...top,...fy,...fx])}
+  const dots=(x,y,z,nx,ny,dx,dy,col,r)=>{c.fillStyle=col;for(let i=0;i<nx;i++)for(let j=0;j<ny;j++){const[a,b]=P3(x+i*dx,y+j*dy,z);c.beginPath();c.ellipse(a,b,r*s*.9,r*s*.5,0,0,7);c.fill()}};
+  const SW=30,SD=16,slot=(ci,ri)=>[4+ci*(SW+3),4+ri*(SD+2)];
+  const parts=[
+    {n:'Deck',d:'12 standard slots (SBS footprint). Every plate, rack and module drops into a known coordinate.',L:0},
+    {n:'Hardware modules',d:'Thermocycler (PCR), Heater-Shaker, Temperature and Magnetic modules — the deck becomes a whole bench.',L:1},
+    {n:'Labware',d:'Tip racks, 96-well plates, reservoirs and trash. Standard formats = robot-readable.',L:2},
+    {n:'Pipettes',d:'Air-displacement pipettes, single- or 8-channel, ~1–1000 µL. Disposable tips avoid contamination.',L:3},
+    {n:'Z-axis head',d:'Two mounts with independent Z axes; stepper-driven plungers aspirate and dispense.',L:4},
+    {n:'XY gantry',d:'Belt-driven stepper gantry moves the head over every slot with sub-millimetre repeatability.',L:5},
+    {n:'HEPA module',d:'Filtered laminar airflow keeps the deck sterile. Flex adds a gripper to move plates.',L:6}];
+  const software={n:'Python protocol API',d:'Protocols are just Python. That means an LLM agent can write, run and debug experiments.'};
+  pt.textContent=software.n;pd.textContent=software.d;
+  const route=[[slot(0,0),1],[slot(2,1),1],[slot(1,0),1],[slot(1,1),0],[slot(0,0),1]];
+  cvs.addEventListener('pointermove',e=>{const m=mpos(cvs,e);hov=-1;for(let i=bbs.length-1;i>=0;i--){const b=bbs[i];if(b&&m.x>b[0]&&m.x<b[2]&&m.y>b[1]&&m.y<b[3]){hov=i;break}}
+    if(hov>=0){pt.textContent=parts[hov].n;pd.textContent=parts[hov].d}else{pt.textContent=software.n;pd.textContent=software.d}cvs.style.cursor=hov>=0?'pointer':'default'},{signal:sig});
+  run(sig,t=>{if(auto){sl.value=Math.round(clamp(.5-.65*Math.cos(t*.45),0,1)*100)}
+    const e=ease(sl.value/100),Z=L=>L*e*16;c.clearRect(0,0,w,h);
+    s=Math.min(4,(h-50)/(91+104+6*16*e));ox=w*.4-15*.866*s;oy=h-24-91*s;
+    const rp=(t*.5)%route.length,ri=Math.floor(rp),rf=ease(clamp((rp-ri)*1.6,0,1)),r0=route[ri][0],r1=route[(ri+1)%route.length][0];
+    const run_=e<.08,gx=run_?lerp(r0[0],r1[0],rf)+10:50,gy=run_?lerp(r0[1],r1[1],rf)+4:30,dip=run_&&rf>=1?Math.sin(clamp((rp-ri)*1.6-1,0,1)/.6*Math.PI)*10:0;
+    bbs=[];
+    const L=i=>{bb=[1e9,1e9,-1e9,-1e9];return bb},end=i=>{bbs[i]=bb;bb=null};
+    const hl=i=>i===hov;
+    L(0);box(0,0,Z(0),106,76,4,hl(0)?'#e8d9a8':'#c9ced8');for(let ci=0;ci<3;ci++)for(let r2=0;r2<4;r2++){const[x,y]=slot(ci,r2);const q=[P3(x,y,Z(0)+4),P3(x+SW,y,Z(0)+4),P3(x+SW,y+SD,Z(0)+4),P3(x,y+SD,Z(0)+4)];c.beginPath();q.forEach((p,i)=>i?c.lineTo(...p):c.moveTo(...p));c.closePath();c.strokeStyle='rgba(0,0,0,.25)';c.stroke()}end(0);
+    L(1);const z1=Z(1)+4;{const[x,y]=slot(0,2);box(x,y,z1,SW,SD*2+2,16,hl(1)?'#ffd27a':'#d8dce4');box(x+2,y+2,z1+16,SW-4,SD*2-2,3,'#8a93a6')}
+    {const[x,y]=slot(1,2);box(x+2,y+1,z1,SW-4,SD-2,8,hl(1)?'#ffd27a':'#e07b39')}{const[x,y]=slot(1,3);box(x+2,y+1,z1,SW-4,SD-2,7,hl(1)?'#ffd27a':'#3b82c4')}{const[x,y]=slot(2,2);box(x+2,y+1,z1,SW-4,SD-2,6,hl(1)?'#ffd27a':'#6b7387')}end(1);
+    L(2);const z2=Z(2)+4;{const[x,y]=slot(0,0);box(x+1,y+1,z2,SW-2,SD-2,9,hl(2)?'#ffd27a':'#e6e8ee');dots(x+3,y+2.5,z2+9,12,6,2.1,2.1,'#2a6bd6',.55)}
+    {const[x,y]=slot(1,0);box(x+1,y+1,z2,SW-2,SD-2,4,hl(2)?'#ffd27a':'#f2f4f8');dots(x+3,y+2.5,z2+4,12,6,2.1,2.1,run_?'#d23b4a':'#8a93a6',.6)}
+    {const[x,y]=slot(1,1);box(x+1,y+1,z2,SW-2,SD-2,4,hl(2)?'#ffd27a':'#f2f4f8');dots(x+3,y+2.5,z2+4,12,6,2.1,2.1,'#8a93a6',.6)}
+    {const[x,y]=slot(2,1);box(x+1,y+1,z2,SW-2,SD-2,7,hl(2)?'#ffd27a':'#cfd5e2');box(x+3,y+3,z2+7,SW-6,SD-6,.3,'#d23b4a')}
+    {const[x,y]=slot(2,3);box(x+1,y+1,z2,SW-2,SD-2,14,hl(2)?'#ffd27a':'#9aa3b5')}end(2);
+    const hz=40+Z(4)-dip;
+    L(3);const pz=22+Z(3)-dip;box(gx,gy,pz,3,3,18,hl(3)?'#ffd27a':'#e9ecf3');box(gx+.8,gy+.8,pz-7,1.4,1.4,7,'#f8f8f8');box(gx+8,gy-6,pz,4,16,18,hl(3)?'#ffd27a':'#e9ecf3');for(let k=0;k<8;k++)box(gx+9,gy-5.5+k*2,pz-5,1.2,1.2,5,'#f8f8f8');end(3);
+    L(4);box(gx-3,gy-8,hz,18,20,20,hl(4)?'#ffd27a':'#3a4152');end(4);
+    L(5);const gz=62+Z(5);box(-6,-4,gz,4,84,4,hl(5)?'#ffd27a':'#8a93a6');box(108,-4,gz,4,84,4,hl(5)?'#ffd27a':'#8a93a6');box(-6,gy-2,gz+4,118,6,5,hl(5)?'#ffd27a':'#aab1c0');end(5);
+    L(6);const hz6=96+Z(6);box(-6,-4,hz6,118,84,8,hl(6)?'#ffd27a':'#5b6275',e>.15?1:.25);if(e>.15)dots(10,10,hz6+8,9,6,11,11,'rgba(255,255,255,.15)',1.6);end(6);
+    if(e<.6){c.globalAlpha=(1-e/.6)*.6;c.strokeStyle='#aab1c0';c.lineWidth=1.5;[[-8,-6],[114,-6],[114,82],[-8,82]].forEach(([x,y])=>{const a=P3(x,y,0),b=P3(x,y,104);c.beginPath();c.moveTo(...a);c.lineTo(...b);c.stroke()});c.globalAlpha=1}
+    if(run_&&dip>3){const[a,b]=P3(gx+2,gy+2,pz-8);c.fillStyle='#d23b4a';c.beginPath();c.arc(a,b+dip*.8,3,0,7);c.fill()}
+    if(e>.5){c.globalAlpha=clamp((e-.5)*4,0,1);parts.forEach((p,i)=>{const b=bbs[i];if(!b)return;const y=(b[1]+b[3])/2,x0=b[2]+6,x1=w-30;
+      c.strokeStyle='rgba(255,255,255,.2)';c.beginPath();c.moveTo(x0,y);c.lineTo(x1-150,y);c.stroke();T(c,p.n,x1-145,y,{s:16,w:650,c:i===hov?C.amber:'#cfd5e2'})});c.globalAlpha=1}
+    if(run_)T(c,'● running protocol',20,h-20,{s:16,c:C.green,w:700,mono:1});
+  });
+};
+
+/* ---------------- 17 LAB LOOP ---------------- */
+A.labloop=(el,sig)=>{
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
+  const N=[['Hypothesize','LLM',C.cyan],['Design','writes protocol',C.violet],['Execute','robots',C.amber],['Measure','instruments',C.pink],['Learn','update model',C.green]];
+  const cx=w*.33,cy=h/2,R=Math.min(h*.4,260);let n=0,ph=0,lastK=-1;
+  run(sig,(t,dt)=>{c.clearRect(0,0,w,h);const speed=.35+Math.min(2.6,t*.12);ph+=dt*speed;const k=Math.floor(ph);if(k!==lastK){lastK=k;if(k>0)n+=Math.round(1+speed*speed*4)}
+    c.strokeStyle=C.line;c.lineWidth=3;c.beginPath();c.arc(cx,cy,R,0,7);c.stroke();
+    const u=ph%5;for(let tr=0;tr<14;tr++){const uu=u-tr*.03,a=-Math.PI/2+uu/5*Math.PI*2;c.fillStyle=rgba(C.amber,(1-tr/14)*.9);c.beginPath();c.arc(cx+Math.cos(a)*R,cy+Math.sin(a)*R,9-tr*.5,0,7);c.fill()}
+    N.forEach(([a,b,col],i)=>{const an=-Math.PI/2+i/5*Math.PI*2,x=cx+Math.cos(an)*R,y=cy+Math.sin(an)*R,on=Math.floor(u)===i;
+      c.fillStyle='#0f121b';c.strokeStyle=col;c.lineWidth=on?4:2;c.shadowColor=col;c.shadowBlur=on?30:0;c.beginPath();c.arc(x,y,on?62:54,0,7);c.fill();c.stroke();c.shadowBlur=0;
+      T(c,a,x,y-8,{s:19,w:800,a:'center'});T(c,b,x,y+16,{s:13,a:'center',c:C.dim})});
+    T(c,n.toLocaleString(),cx,cy-10,{s:52,w:800,a:'center',c:C.amber,mono:1});T(c,'experiments',cx,cy+30,{s:17,a:'center',c:C.dim});
+    const bx=w*.66,bw=w-bx-20;T(c,'experiments per day (illustrative, log scale)',bx,40,{s:17,c:C.dim});
+    const g=clamp(t/3,0,1);[['human scientist',10,'#8b93a6'],['robot lab, 24/7',1000,C.amber]].forEach(([l,v,col],i)=>{const y=100+i*120,len=(bw-110)*(Math.log10(v)/3)*ease(g);
+      T(c,l,bx,y,{s:20,w:700});rr(c,bx,y+18,Math.max(8,len),40,10);c.fillStyle=col;c.fill();T(c,(g>=1?v:Math.round(v*g)).toLocaleString()+(i?'+':''),bx+Math.max(8,len)+12,y+38,{s:22,w:800,mono:1,c:col})});
+    T(c,'more experiments,',bx,h-110,{s:34,w:800});T(c,'less intuition.',bx,h-66,{s:34,w:800,c:C.amber});
+  });
+};
+
+/* ---------------- 18 INVEST ---------------- */
+A.invest=(el,sig)=>{
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);const pt=el.querySelector('.panel h3'),pd=el.querySelector('.panel p');
+  const I=[['Compute & energy',C.amber,95,'GPUs, power, cooling. All three scaling laws eat compute.'],['Verifiers & RL envs',C.cyan,80,'Anything with an automatic checker becomes trainable. Build the checkers.'],['Agent infra',C.green,72,'Sandboxes, tools, evals, security for agents that act.'],['Robot data',C.pink,82,'Teleop fleets, simulation, world models. Robotics lacks its internet.'],['Actuators',C.amber,78,'Frameless motors, strain-wave gears, roller screws. 30–50 per humanoid.'],['Magnets & materials',C.violet,62,'NdFeB rare-earth supply chain = actuator supply chain.'],['Hands & touch',C.pink,66,'Dexterous hands and tactile skin — the hardest part of a humanoid.'],['Batteries',C.green,56,'Energy density for full work shifts.'],['Lab automation',C.cyan,74,'Liquid handlers, plate readers, cloud labs: science at robot throughput.'],['Experimental data',C.violet,60,'Lab results as proprietary training data.']];
+  const B=I.map((b,i)=>({l:b[0],col:b[1],r:b[2]*.95,d:b[3],x:w/2+Math.cos(i*2.4)*(120+i*25),y:h/2+Math.sin(i*2.4)*(100+i*20),vx:0,vy:0}));
+  let sel=0,hov=-1;const show=i=>{pt.textContent=B[i].l;pt.style.color=B[i].col;pd.textContent=B[i].d};show(0);
+  const hit=m=>B.findIndex(b=>Math.hypot(m.x-b.x,m.y-b.y)<b.r);
+  cvs.addEventListener('pointermove',e=>{hov=hit(mpos(cvs,e));if(hov>=0)show(hov);cvs.style.cursor=hov>=0?'pointer':'default'},{signal:sig});
+  cvs.addEventListener('click',e=>{const i=hit(mpos(cvs,e));if(i>=0){sel=i;show(i);B[i].vx+=(Math.random()-.5)*20;B[i].vy-=10}},{signal:sig});
+  let lastAuto=0;
+  run(sig,(t,dt)=>{c.clearRect(0,0,w,h);const cx=w/2,cy=h/2;
+    B.forEach((b,i)=>{b.vx+=(cx-b.x)*.08*dt;b.vy+=(cy-b.y)*.08*dt;b.vx+=Math.sin(t*.7+i)*.15*dt;b.vy+=Math.cos(t*.6+i*2)*.15*dt;b.vx*=.9;b.vy*=.9;b.x+=b.vx;b.y+=b.vy});
+    for(let it=0;it<6;it++)B.forEach((b,i)=>B.forEach((o,j)=>{if(j<=i)return;const dx=o.x-b.x,dy=o.y-b.y,d=Math.hypot(dx,dy)||1,m=b.r+o.r+10;if(d<m){const f=(m-d)/d*.5;b.x-=dx*f;b.y-=dy*f;o.x+=dx*f;o.y+=dy*f}}));
+    B.forEach(b=>{b.x=clamp(b.x,b.r+4,w-b.r-4);b.y=clamp(b.y,b.r+4,h-b.r-4)});
+    if(hov<0&&t-lastAuto>2.2){lastAuto=t;sel=(sel+1)%B.length;show(sel)}
+    B.forEach((b,i)=>{const on=i===hov||(hov<0&&i===sel),a=clamp((t-i*.1)*3,0,1),r=b.r*ease(a)*(on?1.08:1);if(r<1)return;
+      const g=c.createRadialGradient(b.x-r*.3,b.y-r*.3,r*.1,b.x,b.y,r);g.addColorStop(0,rgba(b.col,on?.55:.32));g.addColorStop(1,rgba(b.col,on?.22:.08));
+      c.fillStyle=g;c.beginPath();c.arc(b.x,b.y,r,0,7);c.fill();c.strokeStyle=rgba(b.col,on?1:.55);c.lineWidth=on?3:1.5;if(on){c.shadowColor=b.col;c.shadowBlur=24}c.stroke();c.shadowBlur=0;
+      const words=b.l.split(' ');const lines=words.length>2?[words.slice(0,2).join(' '),words.slice(2).join(' ')]:words.length===2&&b.l.length>13?words:[b.l];
+      lines.forEach((ln,k)=>T(c,ln,b.x,b.y+(k-(lines.length-1)/2)*22,{s:r>60?18:15,w:750,a:'center'}))});
+  });
+};
+
+/* ---------------- 19 CLOSE ---------------- */
+A.close=(el,sig)=>{
+  const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
+  const eras=[['words',C.amber],['reasoning',C.cyan],['agents',C.green],['bodies',C.pink],['science',C.violet],['?','#ffffff']];
+  const f=u=>[w*.08+u*w*.86,h*.94-(Math.exp(u*3.6)-1)/(Math.exp(3.6)-1)*h*.55];
+  const sparks=[];
+  run(sig,(t,dt)=>{c.clearRect(0,0,w,h);const p=clamp(t/3,0,1);
+    c.beginPath();for(let u=0;u<=p;u+=.004){const[x,y]=f(u);u?c.lineTo(x,y):c.moveTo(x,y)}c.strokeStyle=C.amber;c.lineWidth=4;c.shadowColor=C.amber;c.shadowBlur=20;c.stroke();c.shadowBlur=0;
+    eras.forEach(([s,col],i)=>{const u=(i+1)/(eras.length+.2);if(p<u)return;const[x,y]=f(u);const a=clamp((p-u)*10,0,1);
+      if(a<1&&Math.random()<.5)for(let k=0;k<3;k++)sparks.push({x,y,vx:(Math.random()-.5)*200,vy:(Math.random()-.5)*200,l:1,col});
+      c.fillStyle=col;c.beginPath();c.arc(x,y,7+3*Math.sin(t*4+i),0,7);c.fill();T(c,s,x,y+28,{s:18,w:700,a:'center',c:col})});
+    for(let i=sparks.length-1;i>=0;i--){const s=sparks[i];s.x+=s.vx*dt;s.y+=s.vy*dt;s.l-=dt*1.5;if(s.l<=0){sparks.splice(i,1);continue}c.fillStyle=rgba(s.col,s.l);c.beginPath();c.arc(s.x,s.y,2.5,0,7);c.fill()}
+  });
+};
+
+/* ---------------- NAV ---------------- */
+fit();
+addEventListener('resize',()=>{fit();go(cur)});
+addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;
+  if(['ArrowRight','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();go(cur+1)}
+  else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();go(cur-1)}
+  else if(e.key==='Home')go(0);else if(e.key==='End')go(slides.length-1);
+  else if(e.key==='n'||e.key==='N')toggleNotes();else if(e.key==='f'||e.key==='F')toggleFS();});
+let tx0=null;addEventListener('touchstart',e=>tx0=e.touches[0].clientX,{passive:true});
+addEventListener('touchend',e=>{if(tx0===null)return;const dx=e.changedTouches[0].clientX-tx0;if(Math.abs(dx)>60)go(cur+(dx<0?1:-1));tx0=null});
+function toggleNotes(){const n=document.getElementById('notes');n.style.display=n.style.display==='block'?'none':'block'}
+function toggleFS(){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
+document.getElementById('prev').onclick=()=>go(cur-1);document.getElementById('next').onclick=()=>go(cur+1);
+document.getElementById('nbtn').onclick=toggleNotes;document.getElementById('fbtn').onclick=toggleFS;
+go((parseInt(location.hash.slice(1))||1)-1);
+</script>
+</body>
+</html>
