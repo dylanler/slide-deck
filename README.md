@@ -18,6 +18,10 @@ Open `index.html` in a browser (Chrome recommended). The deck scales to any 16:9
 | `F` | fullscreen |
 | `#7` in URL | jump to slide 7 |
 
+### Deploy to Vercel
+
+It's a static site with no build step. Either import this repo at [vercel.com/new](https://vercel.com/new) (framework preset "Other"), or run `npx vercel --prod` from the repo root.
+
 Swipe works on touch screens. The tiny controls appear top-right on hover.
 
 ## Slides
