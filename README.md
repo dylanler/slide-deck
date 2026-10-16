@@ -3,7 +3,7 @@
 **The Bitter Lesson & Scaling Laws** — a 5-minute follow-up to Andrej Karpathy's
 [State of GPT (Microsoft Build 2023)](https://www.youtube.com/watch?v=bZQun8Y4L2A).
 
-A single self-contained `index.html` (no dependencies, works offline). Every visual is
+A single `index.html` (no dependencies, works offline). Almost every visual is
 drawn live with JavaScript on `<canvas>`, so the "GIFs" loop on their own and many respond to the mouse.
 
 ## Run
@@ -27,7 +27,7 @@ Swipe works on touch screens. The tiny controls appear top-right on hover.
 3. 2023 hints → 2026 reality (click cards to flip)
 4. The Bitter Lesson — human knowledge vs. search + learning, cycling domains
 5. Scaling laws — log-log loss curves, compute slider
-6. One law became three — pretraining, RL, test-time
+6. Three ways to spend compute — read more (pretraining + SFT), practice more (RL), think longer (test-time), with real examples and the training-vs-using split
 7. Chronology 2019 → 2026 (hover dots)
 8. Test-time compute — animated tree search + accuracy curve
 9. RLVR — sample → verify → reinforce loop
@@ -39,5 +39,8 @@ Swipe works on touch screens. The tiny controls appear top-right on hover.
 15. Humanoid cost breakdown (hover donut)
 16. Lab robot (Opentrons-style), exploded; collapses to run a pipetting protocol
 17. Self-driving lab loop
-18. What to invest in — clickable bubbles
-19. Close
+18. Labs you can prompt — startup showcase: C5R Facility-0 (GIFs from its launch video), Periodic Labs, Lila Sciences, Medra, Automata, Trilobio, Radical AI, Emerald Cloud Lab, Tetsuwan Scientific
+19. What to invest in — clickable bubbles
+20. Close
+
+Slide 18 uses images and GIFs in `assets/labs/`, taken from each company's website and C5R's launch videos on X. Keep that folder next to `index.html`.
