@@ -18,6 +18,8 @@ Open `index.html` in a browser (Chrome recommended). The deck scales to any 16:9
 | `F` | fullscreen |
 | `#7` in URL | jump to slide 7 |
 
+On **How a chatbot is made**, `→` first steps through steps 1–4 (one more press advances to the next slide) and `←` steps back; no mouse needed. The on-screen `‹`/`›` buttons and swipes behave the same way.
+
 ### Deploy to Vercel
 
 It's a static site with no build step. Either import this repo at [vercel.com/new](https://vercel.com/new) (framework preset "Other"), or run `npx vercel --prod` from the repo root.
@@ -26,9 +28,9 @@ Swipe works on touch screens. The tiny controls appear top-right on hover.
 
 ## Slides
 
-1. The Bitter Lesson — human knowledge vs. search + learning, cycling domains
-2. Sutton's own words — excerpt from the 2019 essay, revealed word by word, with its four-beat pattern
-3. Title — compute flowing up an exponential
+1. Title — compute flowing up an exponential
+2. The Bitter Lesson — human knowledge vs. search + learning, cycling domains
+3. Sutton's own words — excerpt from the 2019 essay, revealed word by word, with its four-beat pattern
 4. How a chatbot is made — 4 animated, plain-language scenes (guess the next word → learn from examples → humans rank answers → practice against the judge); click a step to jump
 5. 2023 hints → 2026 reality (click cards to flip)
 6. Scaling laws — log-log loss curves, compute slider

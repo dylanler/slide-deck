@@ -138,16 +138,26 @@ input[type=range]{accent-color:var(--amber);width:300px}
 <body>
 <div id="stage">
 
-<!-- 1 BITTER LESSON -->
-<section class="slide" data-anim="bitter" data-notes="(0:00) Open cold. Rich Sutton, 2019: the bitter lesson. Researchers keep building in human knowledge. It helps at first, then plateaus. General methods — search and learning — ride compute and overtake. Chess, Go, speech, vision, language… and now robots.">
+<!-- 1 TITLE -->
+<section class="slide" data-anim="title" data-notes="(0:00) Three years ago Karpathy explained the State of GPT. Today: what happened next, told through one idea — the bitter lesson — and the scaling laws that make it predictable.">
+  <canvas class="full"></canvas>
+  <div style="position:relative;z-index:2;margin-top:110px">
+    <div class="kicker">State of GPT · 3 years later</div>
+    <h1>The <span class="grad">Bitter Lesson</span><br>& Scaling Laws</h1>
+    <div class="sub">How compute keeps winning — 2023 → 2026 → next</div>
+  </div>
+</section>
+
+<!-- 2 BITTER LESSON -->
+<section class="slide" data-anim="bitter" data-notes="(0:15) Rich Sutton, 2019: the bitter lesson. Researchers keep building in human knowledge. It helps at first, then plateaus. General methods — search and learning — ride compute and overtake. Chess, Go, speech, vision, language… and now robots.">
   <div class="kicker">Sutton · 2019</div>
   <h2>The Bitter Lesson</h2>
   <div class="quote">General methods that <b>leverage compute</b> win. Every time.</div>
   <div class="area" style="top:230px"><canvas class="full"></canvas></div>
 </section>
 
-<!-- 2 EXCERPT -->
-<section class="slide" data-anim="excerpt" data-notes="(0:10) His own words, from the 2019 essay. Seventy years of AI research, one lesson: general methods that use computation win, by a large margin. And the pattern repeats in four beats: build in human knowledge, it helps at first, it plateaus, then search and learning at scale break through. Keep those four beats in mind — we'll see them again and again.">
+<!-- 3 EXCERPT -->
+<section class="slide" data-anim="excerpt" data-notes="(0:30) His own words, from the 2019 essay. Seventy years of AI research, one lesson: general methods that use computation win, by a large margin. And the pattern repeats in four beats: build in human knowledge, it helps at first, it plateaus, then search and learning at scale break through. Keep those four beats in mind — we'll see them again and again.">
   <div class="kicker">Rich Sutton · The Bitter Lesson · March 13, 2019</div>
   <div class="xq">
     <span class="qm">“</span>
@@ -163,18 +173,8 @@ input[type=range]{accent-color:var(--amber);width:300px}
   <div class="foot">incompleteideas.net/IncIdeas/BitterLesson.html</div>
 </section>
 
-<!-- 3 TITLE -->
-<section class="slide" data-anim="title" data-notes="(0:25) That lesson is the thread of this talk. Three years ago Karpathy explained the State of GPT. Today: what happened next, told through one idea — the bitter lesson — and the scaling laws that make it predictable.">
-  <canvas class="full"></canvas>
-  <div style="position:relative;z-index:2;margin-top:110px">
-    <div class="kicker">State of GPT · 3 years later</div>
-    <h1>The <span class="grad">Bitter Lesson</span><br>& Scaling Laws</h1>
-    <div class="sub">How compute keeps winning — 2023 → 2026 → next</div>
-  </div>
-</section>
-
 <!-- 4 RECAP -->
-<section class="slide" data-anim="recap" data-notes="(0:35) Four steps, like school. One: read the whole internet and play 'guess the next word' trillions of times — that's 99% of the effort, and you get a well-read autocomplete. Two: learn the job from examples people wrote — now it answers instead of rambling. Three: people rank answers, and a judge model learns their taste. Four: practice against the judge. Out comes ChatGPT. Click any step.">
+<section class="slide" data-anim="recap" data-notes="(0:35) Four steps, like school. One: read the whole internet and play 'guess the next word' trillions of times — that's 99% of the effort, and you get a well-read autocomplete. Two: learn the job from examples people wrote — now it answers instead of rambling. Three: people rank answers, and a judge model learns their taste. Four: practice against the judge. Out comes ChatGPT. Use the right arrow to move through steps 1 to 4 — one more press goes to the next slide. The left arrow steps back.">
   <div class="kicker">2023 · Recap</div>
   <h2>How a chatbot is made</h2>
   <div class="steps">
@@ -184,6 +184,7 @@ input[type=range]{accent-color:var(--amber);width:300px}
     <button><b>4</b>Practice for high scores<small>reinforcement learning</small></button>
   </div>
   <div class="area" style="top:262px;bottom:36px"><canvas class="full"></canvas></div>
+  <div class="foot">→ steps through 1–4 · ← steps back</div>
 </section>
 
 <!-- 5 HINTS -->
@@ -384,6 +385,7 @@ const C={amber:'#ffb020',cyan:'#38d6ff',pink:'#ff4f8b',green:'#4ade80',violet:'#
 
 function go(i){
   i=clamp(i,0,slides.length-1);
+  window.__navDir=i<cur?-1:1;
   if(ctrl)ctrl.abort();
   slides[cur].classList.remove('active');
   cur=i;const el=slides[cur];el.classList.add('active');
@@ -422,8 +424,13 @@ A.title=(el,sig)=>{
 /* ---------------- 2 RECAP ---------------- */
 A.recap=(el,sig)=>{
   const cvs=el.querySelector('canvas');const{c,w,h}=cv(cvs);
-  const btns=[...el.querySelectorAll('.steps button')],DUR=7;let t0=0,tNow=0,FA=1,last=-1,docs=[],tries=[],scores=[];
-  btns.forEach((b,i)=>b.onclick=()=>{t0=tNow-i*DUR-.01});
+  const btns=[...el.querySelectorAll('.steps button')],DUR=7;let tNow=0,FA=1,last=-1,docs=[],tries=[],scores=[];
+  let manual=false,mStep=0,tStep=0,curSt=0;
+  if(window.__navDir<0){manual=true;mStep=3}
+  btns.forEach((b,i)=>b.onclick=()=>{manual=true;mStep=i;tStep=tNow});
+  const ctl={next(){if(!manual){manual=true;mStep=curSt;tStep=tNow}if(mStep>=3)return false;mStep++;tStep=tNow;return true},
+             prev(){if(!manual){manual=true;mStep=curSt;tStep=tNow}if(mStep<=0)return false;mStep--;tStep=tNow;return true}};
+  window.__stepCtl=ctl;sig.addEventListener('abort',()=>{if(window.__stepCtl===ctl)window.__stepCtl=null});
   const ga=a=>c.globalAlpha=FA*a,SH=h-120;
   const font=(s,wt)=>`${wt||500} ${s}px Inter,Segoe UI,system-ui,sans-serif`;
   const cap=(a,b)=>{ga(1);T(c,a,0,h-70,{s:36,w:800});T(c,b,0,h-26,{s:21,c:C.dim})};
@@ -519,7 +526,10 @@ A.recap=(el,sig)=>{
     if(lt>5.6){ga(clamp((lt-5.6)*2,0,1));rr(c,cx0+cw-230,cy0+30,220,56,14);c.fillStyle=C.green;c.fill();T(c,'= ChatGPT',cx0+cw-120,cy0+58,{s:28,w:800,a:'center',c:'#06200f'});ga(1)}
     cap('Practice to please the judge.','Try → get scored → do more of what scored well. Out comes ChatGPT.')}
 
-  run(sig,(t,dt)=>{tNow=t;const T2=((t-t0)%(DUR*4)+DUR*4)%(DUR*4),st=Math.floor(T2/DUR),lt=T2-st*DUR;
+  run(sig,(t,dt)=>{tNow=t;let st,lt;
+    if(manual){st=mStep;lt=Math.min(t-tStep,DUR-.9)}
+    else{const T2=(t%(DUR*4)+DUR*4)%(DUR*4);st=Math.floor(T2/DUR);lt=T2-st*DUR}
+    curSt=st;
     if(st!==last){last=st;docs=[];tries=[];scores=[]}
     btns.forEach((b,i)=>{b.classList.toggle('on',i===st);b.style.setProperty('--p',i===st?lt/DUR:i<st?1:0)});
     c.clearRect(0,0,w,h);FA=clamp(lt*3,0,1)*clamp((DUR-lt)*3,0,1);
@@ -1138,16 +1148,19 @@ A.close=(el,sig)=>{
 fit();
 addEventListener('resize',()=>{fit();go(cur)});
 addEventListener('hashchange',()=>{const n=(parseInt(location.hash.slice(1))||1)-1;if(n!==cur)go(n)});
+function nav(d){const ctl=window.__stepCtl;
+  if(ctl&&((d>0&&ctl.next())||(d<0&&ctl.prev())))return;
+  go(cur+d)}
 addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;
-  if(['ArrowRight','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();go(cur+1)}
-  else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();go(cur-1)}
+  if(['ArrowRight','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();nav(1)}
+  else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();nav(-1)}
   else if(e.key==='Home')go(0);else if(e.key==='End')go(slides.length-1);
   else if(e.key==='n'||e.key==='N')toggleNotes();else if(e.key==='f'||e.key==='F')toggleFS();});
 let tx0=null;addEventListener('touchstart',e=>tx0=e.touches[0].clientX,{passive:true});
-addEventListener('touchend',e=>{if(tx0===null)return;const dx=e.changedTouches[0].clientX-tx0;if(Math.abs(dx)>60)go(cur+(dx<0?1:-1));tx0=null});
+addEventListener('touchend',e=>{if(tx0===null)return;const dx=e.changedTouches[0].clientX-tx0;if(Math.abs(dx)>60)nav(dx<0?1:-1);tx0=null});
 function toggleNotes(){const n=document.getElementById('notes');n.style.display=n.style.display==='block'?'none':'block'}
 function toggleFS(){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
-document.getElementById('prev').onclick=()=>go(cur-1);document.getElementById('next').onclick=()=>go(cur+1);
+document.getElementById('prev').onclick=()=>nav(-1);document.getElementById('next').onclick=()=>nav(1);
 document.getElementById('nbtn').onclick=toggleNotes;document.getElementById('fbtn').onclick=toggleFS;
 go((parseInt(location.hash.slice(1))||1)-1);
 </script>
