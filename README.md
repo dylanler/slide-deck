@@ -26,6 +26,8 @@ It's a static site with no build step. Either import this repo at [vercel.com/ne
 
 Swipe works on touch screens. The tiny controls appear top-right on hover.
 
+On a phone (portrait or narrow screen) the deck switches to a mobile layout automatically: slides stack and scroll vertically, grids collapse to one or two columns, timeline labels give way to the detail card, and canvas diagrams use a wider virtual canvas so nothing is clipped. Rotating back to landscape returns to the 16:9 stage. It re-evaluates on every resize, so it adapts live.
+
 ## Slides
 
 1. Title — compute flowing up an exponential

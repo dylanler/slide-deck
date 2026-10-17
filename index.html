@@ -126,6 +126,68 @@ input[type=range]{accent-color:var(--amber);width:300px}
 .lc h4{margin:0;font-size:20px;font-weight:800}
 .lc p{margin:5px 0 0;font-size:14px;color:#aab1c0;line-height:1.3}
 .lc em{margin-top:auto;font:700 12px ui-monospace,monospace;color:var(--green);font-style:normal}
+/* mobile: dynamic phone layout (body.mobile set by fit()) */
+body.mobile #stage{transform-origin:top left}
+body.mobile .slide{padding:54px 18px 72px;overflow-y:auto;overflow-x:hidden}
+body.mobile h1{font-size:42px;line-height:1.03}
+body.mobile h2{font-size:30px;line-height:1.1}
+body.mobile .sub{font-size:18px}
+body.mobile .kicker{font-size:11px;letter-spacing:.13em;padding-right:120px;line-height:1.5}
+body.mobile .quote{font-size:19px;line-height:1.4}
+body.mobile .slide>div[style*="margin-top:110px"],body.mobile .slide>div[style*="margin-top:90px"]{margin-top:64px!important}
+body.mobile .area{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:100%;height:56vh;min-height:330px;margin-top:16px}
+body.mobile .slide>div[style*="position:absolute"]{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:100%!important;height:52vh!important;margin-top:14px}
+body.mobile .panel{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:100%!important;height:auto!important;margin-top:14px;padding:18px}
+body.mobile .panel h3{font-size:24px}body.mobile .panel p{font-size:16px}
+body.mobile .term{position:relative!important;left:auto!important;top:auto!important;width:100%!important;height:48vh!important;margin-top:14px;font-size:12.5px}
+body.mobile .tabs,body.mobile .slider{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;margin-top:14px;flex-wrap:wrap;row-gap:8px}
+body.mobile input[type=range]{width:150px}
+body.mobile .chips{position:relative!important;left:auto!important;bottom:auto!important;margin-top:14px}
+body.mobile .chip{font-size:13px;padding:5px 11px}
+body.mobile .foot{position:relative;right:auto;bottom:auto;margin-top:14px;text-align:right}
+body.mobile .big-stat{font-size:34px}
+body.mobile .steps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}
+body.mobile .steps button{font-size:15px;padding:10px 12px}
+body.mobile .steps button b{width:26px;height:26px;margin-right:7px;font-size:14px}
+body.mobile .steps button small{margin-left:0;font-size:10px}
+body.mobile .cards{grid-template-columns:1fr 1fr;gap:12px;margin-top:24px}
+body.mobile .card{height:205px}
+body.mobile .card .f,body.mobile .card .b{font-size:18px;padding:15px;line-height:1.2}
+body.mobile .card i{font-size:34px}
+body.mobile .xq{margin-top:26px;padding-left:42px}
+body.mobile .xq .qm{font-size:88px;top:-24px}
+body.mobile .xq .lead{font-size:23px;line-height:1.32}
+body.mobile .beats{position:relative;left:auto;right:auto;top:auto;grid-template-columns:1fr 1fr;gap:10px;margin-top:24px}
+body.mobile .beat{padding:15px 16px}
+body.mobile .beat b{font-size:22px}
+body.mobile .beat p{font-size:15px;line-height:1.35}
+body.mobile .beat:not(:last-child):after{display:none}
+body.mobile .coda{position:relative;left:auto;right:auto;top:auto;font-size:19px;margin-top:24px;text-align:left}
+body.mobile .legend{position:relative;right:auto;top:auto;margin-top:12px;font-size:12px}
+body.mobile .legend span{margin:0 12px 0 0}
+body.mobile .tlh{position:relative;left:auto;width:auto;transform:none;top:auto!important;margin:30px 0 58px;font-size:16px}
+body.mobile .tlh b{font-size:36px}
+body.mobile .tlh small{display:inline;margin:0 0 0 8px}
+body.mobile .tl{position:relative;left:auto;right:auto;top:auto!important;margin:0 8px 58px}
+body.mobile .ev{width:26px;height:26px;margin-left:-13px;top:-11px}
+body.mobile .ev .dot{width:26px;height:26px}
+body.mobile .ev .lab{display:none}
+body.mobile .tlcard{position:relative;left:auto;right:auto;bottom:auto;height:auto;min-height:118px;padding:18px;gap:10px;flex-direction:column;align-items:flex-start;margin-top:8px}
+body.mobile .tlcard .d{font-size:23px;min-width:0}
+body.mobile .tlcard .t{font-size:23px}
+body.mobile .tlcard .x{font-size:16px;line-height:1.4}
+body.mobile .feat{position:relative;left:auto;top:auto;width:100%;height:auto;padding:12px;margin-top:16px}
+body.mobile .gifwrap img{height:190px}
+body.mobile .gifwrap.sm{width:128px}body.mobile .gifwrap.sm img{height:96px}
+body.mobile .feat-row{gap:12px}
+body.mobile .feat-row h3{font-size:25px}body.mobile .feat-row p{font-size:14.5px}
+body.mobile .stats b{font-size:21px}body.mobile .stats span{font-size:10.5px}
+body.mobile .lgrid{position:relative;left:auto;right:auto;top:auto;height:auto;grid-template-columns:1fr;gap:10px;margin-top:14px}
+body.mobile .lc img{width:102px}
+body.mobile .lc h4{font-size:18px}body.mobile .lc p{font-size:13.5px}
+body.mobile #hud{opacity:.95;top:8px;right:8px;gap:5px}
+body.mobile #hud button{padding:8px 11px;font-size:14px}
+body.mobile #notes{font-size:16px;padding:12px 16px;max-height:45vh;overflow-y:auto}
 /* hud */
 #bar{position:fixed;left:0;bottom:0;height:4px;background:linear-gradient(90deg,var(--amber),var(--pink));width:0;transition:width .35s;z-index:9}
 #hud{position:fixed;right:14px;top:12px;z-index:9;display:flex;gap:6px;align-items:center;font:12px ui-monospace,monospace;color:#5a6172;opacity:.35;transition:opacity .3s}
@@ -369,9 +431,13 @@ const slides=[...document.querySelectorAll('.slide')];
 let S=1,cur=0,ctrl=null;
 const A={};
 
-function fit(){S=Math.min(innerWidth/1600,innerHeight/900);stage.style.transform=`translate(-50%,-50%) scale(${S})`}
-function cv(el){const w=el.clientWidth,h=el.clientHeight,d=(devicePixelRatio||1)*S;el.width=Math.max(1,Math.round(w*d));el.height=Math.max(1,Math.round(h*d));const c=el.getContext('2d');c.setTransform(d,0,0,d,0,0);return{c,w,h}}
-function mpos(el,e){const r=el.getBoundingClientRect();return{x:(e.clientX-r.left)*el.clientWidth/r.width,y:(e.clientY-r.top)*el.clientHeight/r.height}}
+function fit(){const mob=innerWidth<innerHeight||innerWidth<=560;document.body.classList.toggle('mobile',mob);
+  if(mob){S=1;stage.style.width=innerWidth+'px';stage.style.height=innerHeight+'px';stage.style.left='0';stage.style.top='0';stage.style.transform='none'}
+  else{S=Math.min(innerWidth/1600,innerHeight/900);stage.style.width='';stage.style.height='';stage.style.left='';stage.style.top='';stage.style.transform=`translate(-50%,-50%) scale(${S})`}}
+function cv(el){let w=el.clientWidth,h=el.clientHeight,vs=S;
+  if(document.body.classList.contains('mobile')&&w<640){vs=w/640;w=640;h=el.clientHeight/vs}
+  el._lw=w;el._lh=h;const d=(devicePixelRatio||1)*vs;el.width=Math.max(1,Math.round(w*d));el.height=Math.max(1,Math.round(h*d));const c=el.getContext('2d');c.setTransform(d,0,0,d,0,0);return{c,w,h}}
+function mpos(el,e){const r=el.getBoundingClientRect();return{x:(e.clientX-r.left)*(el._lw||el.clientWidth)/r.width,y:(e.clientY-r.top)*(el._lh||el.clientHeight)/r.height}}
 function run(sig,fn){const t0=performance.now();let last=t0;const f=t=>{if(sig.aborted)return;fn(Math.max(0,(t-t0)/1000),clamp((t-last)/1000,0,.05));last=t;requestAnimationFrame(f)};requestAnimationFrame(f)}
 function every(sig,ms,fn){const id=setInterval(fn,ms);sig.addEventListener('abort',()=>clearInterval(id))}
 function later(sig,ms,fn){const id=setTimeout(fn,ms);sig.addEventListener('abort',()=>clearTimeout(id))}
@@ -433,7 +499,7 @@ A.recap=(el,sig)=>{
   window.__stepCtl=ctl;sig.addEventListener('abort',()=>{if(window.__stepCtl===ctl)window.__stepCtl=null});
   const ga=a=>c.globalAlpha=FA*a,SH=h-120;
   const font=(s,wt)=>`${wt||500} ${s}px Inter,Segoe UI,system-ui,sans-serif`;
-  const cap=(a,b)=>{ga(1);T(c,a,0,h-70,{s:36,w:800});T(c,b,0,h-26,{s:21,c:C.dim})};
+  const cap=(a,b)=>{ga(1);T(c,a,0,h-70,{s:Math.min(36,w/(a.length*.5)),w:800});T(c,b,0,h-26,{s:Math.min(21,w/(b.length*.46)),c:C.dim})};
   const typed=(s,p)=>s.slice(0,Math.floor(clamp(p,0,1)*s.length));
   const NODES=[...Array(22)].map((_,i)=>[Math.sin(i*12.9898)*.8,Math.sin(i*78.233)*.8]);
   function brain(x,y,r,t,col=C.amber){
@@ -462,8 +528,8 @@ A.recap=(el,sig)=>{
     brain(bx,by,95,t);
     ga(1);T(c,'99% of the effort',bx,by+142,{s:22,w:800,c:C.amber,a:'center'});T(c,'thousands of chips · months',bx,by+170,{s:15,c:C.dim,a:'center'});
     const two=lt>=3.4,l2=two?lt-3.4:lt,ex=two?['Once upon a',[['time',.94],['hill',.02],['dream',.01]]]:['The capital of France is',[['Paris',.91],['Lyon',.03],['a',.02]]];
-    const rx=w*.52;T(c,'The game: guess the next word',rx,18,{s:17,c:C.dim,w:600});
-    c.font=font(40,750);const tw=c.measureText(ex[0]).width;T(c,typed(ex[0],l2/1),rx,82,{s:40,w:750});
+    const rx=w*.52,fs=w<900?Math.min(40,(w-rx-180)/(ex[0].length*.52)):40;T(c,'The game: guess the next word',rx,18,{s:17,c:C.dim,w:600});
+    c.font=font(fs,750);const tw=c.measureText(ex[0]).width;T(c,typed(ex[0],l2/1),rx,82,{s:fs,w:750});
     if(l2>1){const bxx=rx+tw+16,fill=l2>2.3;c.setLineDash(fill?[]:[8,6]);rr(c,bxx,54,170,56,10);c.strokeStyle=fill?C.amber:'#5a6172';c.lineWidth=2.5;c.stroke();c.setLineDash([]);
       if(fill){c.fillStyle=rgba(C.amber,.15);c.fill();T(c,ex[1][0][0],bxx+85,83,{s:38,w:800,c:C.amber,a:'center'})}else T(c,'?',bxx+85,83,{s:34,w:800,c:'#5a6172',a:'center'})}
     const bp=ease(clamp((l2-1.1)*1.4,0,1));
