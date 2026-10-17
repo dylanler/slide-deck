@@ -24,9 +24,18 @@ On **How a chatbot is made**, `→` first steps through steps 1–4 (one more pr
 
 It's a static site with no build step. Either import this repo at [vercel.com/new](https://vercel.com/new) (framework preset "Other"), or run `npx vercel --prod` from the repo root.
 
-Swipe works on touch screens. The tiny controls appear top-right on hover.
+Swipe works on landscape touch screens. The tiny controls appear top-right on hover.
 
-On a phone (portrait or narrow screen) the deck switches to a mobile layout automatically: slides stack and scroll vertically, grids collapse to one or two columns, timeline labels give way to the detail card, and canvas diagrams use a wider virtual canvas so nothing is clipped. Rotating back to landscape returns to the 16:9 stage. It re-evaluates on every resize, so it adapts live.
+## On a phone
+
+On a phone, or any narrow portrait screen, the deck becomes a scrolling story instead of slides:
+
+- A full-screen hero opens it, and every chapter after that reveals itself as you scroll.
+- A sticky header shows reading progress, the current chapter, and a Contents menu for jumping between chapters.
+- Each chapter's speaker notes appear as readable narration under its title.
+- The animations run only while their chapter is on screen. Tapping a diagram does what hovering does on desktop.
+- The wide diagrams switch to stacked portrait layouts: the three axes, the four chatbot steps, VLA, System 1/2, the humanoid BOM, and the lab loop. The chronology becomes a vertical timeline.
+- Rotating to landscape on a tablet switches back to the 16:9 presenter deck.
 
 ## Slides
 
